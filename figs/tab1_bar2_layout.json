@@ -1,0 +1,31 @@
+{
+    "height": 500,
+    "width": 540,
+    "yaxis": {
+        "showgrid": true,
+        "tickmode": "array",
+        "tickvals": [
+            10e6,
+            20e6,
+            30e6,
+            40e6,
+            50e6,
+            60e6,
+            70e6
+        ],
+        "range": [
+            0,
+            65e6
+        ],
+        "tickformat": ".2s",
+        "ticksuffix": "",
+        "side": "right"
+    },
+    "margin": {
+        "r": 40
+    },
+    "barmode": "stack",
+    "font": {
+        "size": 13
+    }
+}

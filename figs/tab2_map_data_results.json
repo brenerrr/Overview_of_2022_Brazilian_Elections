@@ -1,0 +1,14 @@
+{
+  "type": "choroplethmapbox",
+  "showscale": true,
+  "marker_line_width": 0,
+  "coloraxis": "coloraxis",
+  "hovertemplate": "<b>%{customdata[1]}</b><br>%{customdata[2]} voters<br>Rank Position: %{customdata[0]}<extra></extra>",
+  "marker": {
+    "line": {
+      "width": 0
+    }
+  },
+  "zmin": 0,
+  "zmax": 1
+}

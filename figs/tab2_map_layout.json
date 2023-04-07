@@ -1,0 +1,58 @@
+{
+  "margin": {
+    "r": 0,
+    "l": 0,
+    "t": 0,
+    "b": 0
+  },
+  "height": 600,
+  "width": 1000,
+  "geo": {
+    "center": {
+      "lat": -13,
+      "lon": -55
+    },
+    "visible": false,
+    "projection": {
+      "scale": 4.5
+    },
+    "bgcolor": "white",
+    "subunitcolor": "white"
+  },
+  "mapbox": {
+    "style": "white-bg",
+    "center": {
+      "lat": -13,
+      "lon": -55
+    },
+    "zoom": 3.0
+  },
+  "coloraxis": {
+    "colorbar": {
+      "tickmode": "array",
+      "ticktext": [
+        "Most Voters",
+        "Least Voters"
+      ],
+      "tickvals": [
+        0,
+        100
+      ],
+      "title": {
+        "text": ""
+      },
+      "ticks": "",
+      "tickfont": {
+        "size": 15
+      },
+      "len": 0.5,
+      "orientation": "h",
+      "y": -0.1,
+      "outlinewidth": 0
+    },
+    "showscale": true,
+    "cmin": 0,
+    "cmax": 100,
+    "colorscale": "solar"
+  }
+}

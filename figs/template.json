@@ -1,0 +1,72 @@
+{
+    "height": 500,
+    "paper_bgcolor": "#1b1513",
+    "plot_bgcolor": "#1b1513",
+    "font": {
+        "family": "Noto Sans",
+        "color": "#F0A500"
+    },
+    "yaxis": {
+        "color": "#F0A500",
+        "gridcolor": "#F0A500",
+        "gridwidth": 2,
+        "linecolor": "#1b1513",
+        "showspikes": false,
+        "showgrid": true,
+        "tickcolor": "#1b1513",
+        "minor": {
+            "tickcolor": "#1b1513"
+        }
+    },
+    "showlegend": false,
+    "margin": {
+        "r": 0,
+        "l": 0,
+        "t": 0,
+        "b": 0,
+        "pad": 0
+    },
+    "xaxis": {
+        "showline": false
+    },
+    "mapbox": {
+        "style": "mapbox://styles/brenerrr/clg04kyel000601qi71eiivy9",
+        "bounds": {
+            "east": -18,
+            "west": -83,
+            "north": 9,
+            "south": -35
+        }
+    },
+    "coloraxis": {
+        "colorbar": {
+            "tickmode": "array",
+            "title": {
+                "text": ""
+            },
+            "ticks": "",
+            "tickfont": {
+                "size": 15
+            },
+            "len": 0.5,
+            "thickness": 3,
+            "orientation": "h",
+            "y": -0.1,
+            "outlinewidth": 0
+        },
+        "colorscale": [
+            [
+                0.0,
+                "rgba(178,24,43,1)"
+            ],
+            [
+                0.5,
+                "rgba(255,255,255,1)"
+            ],
+            [
+                1.0,
+                "rgba(33,102,172,1)"
+            ]
+        ]
+    }
+}

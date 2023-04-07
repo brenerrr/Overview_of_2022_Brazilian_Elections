@@ -1,0 +1,16 @@
+{
+  "coloraxis": {
+    "cmin": 10,
+    "cmax": 90,
+    "colorbar": {
+      "tickvals": [
+        10,
+        90
+      ],
+      "ticktext": [
+        "Lula",
+        "Bolsonaro"
+      ]
+    }
+  }
+}

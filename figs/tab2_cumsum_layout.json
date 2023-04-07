@@ -1,0 +1,32 @@
+{
+    "width": 800,
+    "height": 800,
+    "showlegend": false,
+    "yaxis": {
+        "fixedrange": true,
+        "title": {
+            "text": "Number of voters"
+        },
+        "autorange": false,
+        "range": [
+            0,
+            165000000
+        ],
+        "showgrid": true
+    },
+    "xaxis": {
+        "title": {
+            "text": "Number of counties"
+        },
+        "autorange": false,
+        "range": [
+            -200,
+            5700
+        ],
+        "hoverformat": "%{x:.2f}"
+    },
+    "hovermode": "closest",
+    "font": {
+        "size": 15
+    }
+}

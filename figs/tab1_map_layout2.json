@@ -1,0 +1,16 @@
+{
+  "coloraxis": {
+    "cmax": 20,
+    "cmin": -20,
+    "colorbar": {
+      "tickvals": [
+        -20,
+        20
+      ],
+      "ticktext": [
+        "Less votes",
+        "More votes"
+      ]
+    }
+  }
+}

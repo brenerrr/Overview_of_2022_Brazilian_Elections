@@ -1,0 +1,13 @@
+{
+  "type": "choroplethmapbox",
+  "hoverinfo": "skip",
+  "showscale": true,
+  "marker_line_width": 0,
+  "hovertemplate": "<b>z<extra></extra>",
+  "coloraxis": "coloraxis",
+  "marker": {
+    "line": {
+      "width": 0
+    }
+  }
+}

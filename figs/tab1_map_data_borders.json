@@ -1,0 +1,18 @@
+{
+  "type": "choroplethmapbox",
+  "hoverinfo": "skip",
+  "hovertemplate": null,
+  "colorscale": [
+    [
+      0.0,
+      "rgba(0,0,0,0.5)"
+    ],
+    [
+      1.0,
+      "rgba(0,0,0,0)"
+    ]
+  ],
+  "showscale": false,
+  "zmin": 0,
+  "zmax": 1
+}

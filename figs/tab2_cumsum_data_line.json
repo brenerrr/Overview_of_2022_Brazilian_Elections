@@ -1,0 +1,7 @@
+{
+    "type": "scatter",
+    "hovertemplate": "<br>%{customdata[1]}<br>This and previous %{customdata[0]}<br> counties have %{y:,.0f} voters<extra></extra>",
+    "marker": {
+        "color": "rgba(213, 194, 104, 1)"
+    }
+}
