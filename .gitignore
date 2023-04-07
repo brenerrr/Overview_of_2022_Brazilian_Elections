@@ -1,0 +1,13 @@
+mapbox_token.txt
+
+files/*csv
+
+files/BR*
+
+files/2018
+
+.vscode
+
+__pycache__
+
+*ipynb

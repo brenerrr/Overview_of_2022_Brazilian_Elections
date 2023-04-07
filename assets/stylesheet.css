@@ -1,0 +1,108 @@
+/* latin */
+@font-face {
+    font-family: 'Noto Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: fallback;
+    src: url(https://fonts.gstatic.com/s/notosans/v27/o-0IIpQlx3QUlC5A4PNr5TRA.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+body {
+    font-family: 'Noto Sans';
+    color: #F0A500;
+}
+
+.main {
+    border: 3px solid #F0A500;
+    border-radius: 15px;
+    height: 800px;
+    width: 1200px;
+    background-color: #1b1513;
+
+}
+
+h1 {
+    margin-bottom: 0px;
+    margin-left: 10px;
+    text-align: center;
+}
+
+.radio {
+    font-size: 16px;
+    margin: auto;
+    text-align: center;
+    padding-top: 15px;
+    /* border: 3px solid #292b26; */
+
+}
+
+input[type="radio"] {
+    margin: 0 5px 0 50px;
+    accent-color: #F0A500;
+}
+
+.tab1-text {
+    align-self: center;
+    text-align: justify;
+    width: 80%;
+    margin: 20px 0 0 0;
+    border: 1px solid #1b1513;
+    padding: 10px;
+    font-size: large;
+
+}
+
+.tab1-map {
+    width: 100%;
+}
+
+.tab1-plot-background {
+    background-color: #1b1513;
+    /* padding: 15px; */
+}
+
+
+.nav-link {
+    color: #1b1513 !important;
+    /* background-color: #1b1513 !important; */
+}
+
+.nav-item {
+    border-left: 1px solid #F0A500;
+    border-right: 1px solid #F0A500;
+    border: 1px solid #F0A500;
+    background-color: #E6D5B8;
+
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+.tabs {
+    background-color: #1b1513;
+    border-bottom: 1px solid #F0A500;
+    --bs-nav-tabs-link-hover-border-color: #F0A500;
+    /* --bs-nav-tabs-border-width: 3px; */
+
+}
+
+
+
+/*
+.nav-tabs {
+    background-color: #1b1b13;
+} */
+
+/* .active-tab { */
+/* background-color: #F0A500 !important; */
+
+/* padding: 20px; */
+/* } */
+
+.active-tab-label {
+    /* background-color: #F0A500 !important; */
+    background-color: #F0A500 !important;
+    color: #1b1513 !important;
+    border: 1px solid #F0A500 !important;
+
+}
