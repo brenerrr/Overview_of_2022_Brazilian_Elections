@@ -8,16 +8,63 @@
   "coloraxis": {
     "colorbar": {
       "ticktext": [
-        "Most Voters",
-        "Least Voters"
+        "Southeast",
+        "South",
+        "Central-West",
+        "North",
+        "Northeast"
       ],
       "tickvals": [
-        0,
-        100
+        0.4,
+        1.2,
+        2.0,
+        2.8,
+        3.6
       ]
     },
     "cmin": 0,
-    "cmax": 100,
-    "colorscale": "solar"
+    "cmax": 4,
+    "colorscale": [
+      [
+        0,
+        "#EF7FD9"
+      ],
+      [
+        0.19,
+        "#EF7FD9"
+      ],
+      [
+        0.20,
+        "#90F0DC"
+      ],
+      [
+        0.39,
+        "#90F0DC"
+      ],
+      [
+        0.40,
+        "#F0EC78"
+      ],
+      [
+        0.59,
+        "#F0EC78"
+      ],
+      [
+        0.60,
+        "#9A60F0"
+      ],
+      [
+        0.79,
+        "#9A60F0"
+      ],
+      [
+        0.80,
+        "#F08F6C"
+      ],
+      [
+        1,
+        "#F08F6C"
+      ]
+    ]
   }
 }

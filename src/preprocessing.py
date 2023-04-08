@@ -1,3 +1,4 @@
+from itertools import repeat
 import numpy as np
 import plotly.graph_objects as go
 from pydantic.utils import deep_update
@@ -47,10 +48,10 @@ def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame]:
     delta_region = delta_region.reindex(sorted(delta_region.columns), axis=1)
     delta_region['DELTA'] = delta_region.VOTOS_BOLSONARO_PERCENT - delta_region.VOTOS_BOLSONARO_PERCENT_2018
 
-    df['QT_APTOS_CUMSUM_PERCENT'] = df.QT_APTOS.cumsum() / df.QT_APTOS.sum() * 100
-
     df = df.sort_values(by='QT_APTOS', ascending=False)
     df = df.reset_index(drop=True)
+
+    df['QT_APTOS_CUMSUM_PERCENT'] = 100 - (df.QT_APTOS.cumsum() / df.QT_APTOS.sum() * 100)
 
     # Votes per region
     df_regions = df.groupby('SG_UF').agg({
@@ -76,6 +77,13 @@ def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame]:
     df_regions['NM_REGIAO'] = df_regions['NM_REGIAO'].map(rename_dict)
     df['NM_REGIAO'] = df['NM_REGIAO'].map(rename_dict)
 
+    df['NM_REGIAO_INT'] = df['NM_REGIAO'].map({
+        "Southeast": 0,
+        "South": 1,
+        "Central-West": 2,
+        "North": 3,
+        "Northeast": 4,
+    })
     return df, df_regions
 
 
@@ -87,7 +95,7 @@ def load_json(filename, additional_dict=None) -> dict:
     return additional_dict
 
 
-def create_bars(df_regions, template_layout, colors):
+def create_bars(df, df_regions, template_layout, colors):
 
     # Bar plots
     layout_bar1 = load_json('figs/tab1_bar1_layout.json', template_layout)
@@ -98,9 +106,28 @@ def create_bars(df_regions, template_layout, colors):
     traces_bar2 = []
     traces_bar3 = []
     traces_bar4 = []
-    bar_data = load_json('figs/tab1_bar_data.json')
+    bar1_data = load_json('figs/tab1_bar1_data.json')
+    bar2_data = load_json('figs/tab1_bar2_data.json')
+    bar3_data = load_json('figs/tab1_bar3_data.json')
+    bar4_data = load_json('figs/tab1_bar4_data.json')
 
     # Bar 1 and 2
+
+    customdata1 = [
+
+    ]
+
+    customdata2 = dict(
+        LULA=[
+            df['VOTOS_LULA'].sum() / (df['VOTOS_LULA'] + df['VOTOS_BOLSONARO']).sum() * 100,
+            df['VOTOS_LULA'].sum()
+        ],
+        BOLSONARO=[
+            df['VOTOS_BOLSONARO'].sum() / (df['VOTOS_BOLSONARO'] + df['VOTOS_LULA']).sum() * 100,
+            df['VOTOS_BOLSONARO'].sum()
+        ]
+    )
+
     for name in ['LULA', 'BOLSONARO']:
         traces_bar1.append(go.Bar(
             x=df_regions['NM_REGIAO'],
@@ -108,16 +135,23 @@ def create_bars(df_regions, template_layout, colors):
             text=df_regions[f'PERCENTAGE_{name}'].round(2).astype(str) + '%',
             name=name.capitalize(),
             marker_color=colors[name],
-            **bar_data
+            **bar1_data
         ))
         for _, df_ in df_regions.iterrows():
+
+            customdata = np.array([
+                (df_regions[f'VOTOS_{name}'].sum() / (df_regions[f'VOTOS_LULA'] + df_regions[f'VOTOS_BOLSONARO']).sum() * 100),
+                df_regions[f'VOTOS_{name}'].sum()
+            ]).reshape(1, -1)
+
             traces_bar2.append(go.Bar(
                 x=[name.capitalize()],
                 y=[df_[f'VOTOS_{name}']],
                 text=df_['NM_REGIAO'],
                 name=df_['NM_REGIAO'],
                 marker_color=colors[name],
-                **bar_data
+                customdata=customdata,
+                **bar2_data
             ))
 
     # Bar 3 and 4
@@ -127,7 +161,7 @@ def create_bars(df_regions, template_layout, colors):
         # text=df_regions[f'PERCENTAGE_BOLSONARO{name}'].round(2).astype(str) + '%',
         text=df_regions['NM_REGIAO'],
         marker_color=np.where(df_regions['DELTA'] > 0, colors['BOLSONARO'], colors['LULA']),
-        **bar_data
+        **bar3_data
     ))
     for name in ['_2018', '']:
         year = '2018' if name == '_2018' else '2022'
@@ -139,7 +173,7 @@ def create_bars(df_regions, template_layout, colors):
                 text=df_['NM_REGIAO'],
                 name=df_['NM_REGIAO'],
                 marker_color=colors['BOLSONARO'],
-                **bar_data
+                **bar4_data
             ))
 
     bar1 = go.Figure(data=traces_bar1, layout=layout_bar1)
@@ -211,18 +245,30 @@ def create_tab2_cumsum(df, template_layout):
     cumsum_filled = load_json('figs/tab2_cumsum_data_filled.json')
     cumsum_text = load_json('figs/tab2_cumsum_data_text.json')
     cumsum_layout = load_json('figs/tab2_cumsum_layout.json', template_layout)
+
+    customdata = df[['NM_MUNICIPIO']]
+    customdata.insert(1, 'QT_APTOS_CUMSUM_PERCENT', 100 - df['QT_APTOS_CUMSUM_PERCENT'])
     cumsum_line.update(dict(
         x=df.index + 1,
         y=df.QT_APTOS.cumsum(),
-        customdata=df[['NM_MUNICIPIO']].reset_index().values,
+        customdata=customdata.reset_index().values,
     ))
+
+    cumsum_colors = cumsum_filled.pop('colors')
+
     cumsum = go.Figure([
         cumsum_line,
         *[cumsum_filled.copy() for _ in range(5)],
         *[cumsum_text.copy() for _ in range(5)]],
         cumsum_layout)
 
-    return cumsum
+    output = dict(
+        fig=cumsum,
+        text=cumsum_text,
+        colors=cumsum_colors
+    )
+
+    return output
 
 
 def create_tab2_map(df, borders, template_layout):
@@ -231,13 +277,13 @@ def create_tab2_map(df, borders, template_layout):
     customdata = df[['NM_MUNICIPIO', 'QT_APTOS']].reset_index()
     customdata['index'] = customdata['index'] + 1
     map_results.update(dict(
-        z=df[:213]['QT_APTOS_CUMSUM_PERCENT'],
+        # z=df[:213]['QT_APTOS_CUMSUM_PERCENT'],
+        z=df[:213]['NM_REGIAO_INT'],
         geojson=df[:213].geometry.__geo_interface__,
         locations=df[:213].index,
         customdata=customdata[:213].values,
     ))
     map = go.Figure([map_results, borders], map_layout)
-
     return map
 
 

@@ -37,7 +37,7 @@ else:
 
 tab1_map = create_tab1_maps(df, df_regions, template_layout)
 
-bars = create_bars(df_regions, template_layout, colors)
+bars = create_bars(df, df_regions, template_layout, colors)
 
 cumsum = create_tab2_cumsum(df, template_layout)
 
@@ -101,14 +101,14 @@ tabs_content = [
 
         dcc.Interval(
             id='tab1-interval-component',
-            interval=60 * 1000,  # in milliseconds
+            interval=1 * 1000,  # in milliseconds
             n_intervals=0
         )
     ]),
     # Tab 2
     html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
         html.Div(style={'flex': 1}, children=[
-            dcc.Graph(figure=cumsum, id='tab2-cumsum',),
+            dcc.Graph(figure=cumsum['fig'], id='tab2-cumsum',),
         ]),
 
         html.Div(style={'flex': 1}, children=[
@@ -117,8 +117,8 @@ tabs_content = [
 
         dcc.Interval(
             id='tab2-interval-component',
-            interval=3 * 1000,  # in milliseconds
-            n_intervals=1
+            interval=1 * 1000,  # in milliseconds
+            n_intervals=0
         )
 
     ]),
@@ -170,8 +170,8 @@ def update_tab(tab):
     Input('tab1-map', 'figure'),
     State('tab1-text', 'children')
 )
-def update_tab1_text(map, current_text):
-    mask = np.array(map['data'][1]['z'], dtype=bool)
+def update_tab1_text(fig_map, current_text):
+    mask = np.array(fig_map['data'][1]['z'], dtype=bool)
     if mask.any():
         region = df_regions['NM_REGIAO'][mask].values[0]
     else:
@@ -203,27 +203,27 @@ def toggle_tab1_bar(radio_bar, radio_map):
     State('map-radio', 'value'),
     prevent_initial_call=True
 )
-def update_tab1_bar(map, bar, radio_bar, radio_map):
+def update_tab1_bar(fig_map, fig_bar, radio_bar, radio_map):
 
-    mask = np.array(map['data'][1]['z'])
+    mask = np.array(fig_map['data'][1]['z'])
     # Candidates in x axis
     if radio_bar == 'Aggregated':
-        patch = make_bar_aggregated(mask, radio_bar, bar, radio_map)
+        patch = make_bar_aggregated(mask, radio_bar, fig_bar, radio_map)
 
     # Regions in x axis
     else:
-        patch = make_bar_expanded(mask, bar, radio_map)
+        patch = make_bar_expanded(mask, fig_bar, radio_map)
 
     return patch
 
 
-def make_bar_expanded(mask, bar, value_map):
+def make_bar_expanded(mask, fig_bar, value_map):
 
     patch = Patch()
 
     # Make sure update is necessary
     current_values = []
-    for trace in bar['data']:
+    for trace in fig_bar['data']:
         current_values.append(trace['y'])
 
     if value_map == '2022 Results':
@@ -236,22 +236,19 @@ def make_bar_expanded(mask, bar, value_map):
         indexes = [0]
 
     if np.array_equiv(new_data, current_values): return dash.no_update
-    # print('updating expanded bars')
     for i, val in zip(indexes, new_data):
-        # print(i, val)
         patch['data'][i]['y'] = val
     patch['layout'] = bars[value_map]['Expanded'].layout
 
-    print('\n\n')
     return patch
 
 
-def make_bar_aggregated(mask, value, bar, value_map):
+def make_bar_aggregated(mask, value, fig_bar, value_map):
     patch = Patch()
 
     # Make sure update is necessary
     current_values = []
-    for trace in bar['data']:
+    for trace in fig_bar['data']:
         current_values.append(trace['y'][0])
 
     if value_map == '2022 Results':
@@ -294,19 +291,19 @@ def toggle_tab1_map(option):
     State('tab1-map', 'hoverData'),
     State('tab1-map', 'figure'),
 )
-def update_tab1_map(n, hoverData, map):
+def update_tab1_map(n, hoverData, fig_map):
 
     patch_map = Patch()
 
     if hoverData:
         # Find region of click
         i = hoverData['points'][0]['pointNumber']
-        region = map['data'][0]['customdata'][i][-1]
+        region = fig_map['data'][0]['customdata'][i][-1]
         mask = df_regions.NM_REGIAO == region
         new_z = mask.astype(float).values
 
         # Check if it is the same as the one currently selected
-        current_z = map['data'][1]['z']
+        current_z = fig_map['data'][1]['z']
         same_region_previous = np.array_equiv(new_z, current_z)
 
         if not same_region_previous:
@@ -314,8 +311,8 @@ def update_tab1_map(n, hoverData, map):
             patch_map['data'][1]['z'] = regions_z
 
     else:
-        if not all(map['data'][1]['z']):
-            regions_z = np.ones_like(map['data'][1]['z'])
+        if not all(fig_map['data'][1]['z']):
+            regions_z = np.ones_like(fig_map['data'][1]['z'])
             patch_map['data'][1]['z'] = regions_z
 
     return patch_map
@@ -329,26 +326,24 @@ def update_tab1_map(n, hoverData, map):
     Input('tab2-cumsum', 'hoverData'),
     State('tab2-cumsum', 'figure'),
 )
-def update_tab2_cumsum(hoverData, cumsum):
+def update_tab2_cumsum(hoverData, fig_cumsum):
     # First call
-    if not ctx.triggered_id: return draw_tab2_cumsum(1000, cumsum)
+    if not ctx.triggered_id: return draw_tab2_cumsum(1000, fig_cumsum)
 
-    # A call by interval component but there is no hover data
     if not hoverData: return dash.no_update
 
-    # A call by interval component with hover data
     else:
         i = hoverData['points'][0]['pointNumber'] + 1
-        return draw_tab2_cumsum(i, cumsum)
+        return draw_tab2_cumsum(i, fig_cumsum)
 
 
-def draw_tab2_cumsum(i, cumsum):
+def draw_tab2_cumsum(i, fig_cumsum):
     patch = Patch()
 
     df_ = df.loc[:i - 1, ['QT_APTOS', 'NM_REGIAO']]
     all_voters = df_['QT_APTOS'].sum()
     percent_voters = {}
-    for region in ['South', 'Southeast', 'Central-West', 'North', 'Northeast']:
+    for region in ['Southeast', "Northeast", 'South', 'Central-West', 'North']:
         percent_voters[region] = df_['QT_APTOS'][df_['NM_REGIAO'] == region].sum() / all_voters
 
     # Fill
@@ -366,7 +361,7 @@ def draw_tab2_cumsum(i, cumsum):
         np.linspace(x_fill[-1], last, n_points)),
     )
 
-    y_fill = cumsum['data'][0]['y'][:i]
+    y_fill = fig_cumsum['data'][0]['y'][:i]
     # y_fill = np.concatenate((y_fill[0:1], y_fill[1::20], y_fill[-1:], ))
 
     y_fill = np.concatenate((
@@ -376,13 +371,7 @@ def draw_tab2_cumsum(i, cumsum):
     )
 
     iN = 0
-    color = {
-        'Northeast': '#493B2A',
-        'North': '#593F62',
-        'Central-West': '#7B6D8D',
-        'South': '#8499B1',
-        'Southeast': '#A5C4D4'
-    }
+
     x_ = x_fill
     y_ = y_fill
     for j, (region, percent) in enumerate(percent_voters.items()):
@@ -398,30 +387,34 @@ def draw_tab2_cumsum(i, cumsum):
 
         patch['data'][1 + j]['x'] = x_[:iN + offset]
         patch['data'][1 + j]['y'] = y_[:iN + offset]
-        patch['data'][1 + j]['marker']['color'] = color[region]
+        patch['data'][1 + j]['marker']['color'] = cumsum['colors'][region]
 
-        # # Text
-        # x_text = x_[round(iN / 2)]
-        # # x_text = max(x_text, 1000)
-        # y_text = cumsum['data'][0]['y'][round(i / 2)] / 2
-        # # y_text = max(25e6, y_text)
+        # Text
 
-        # # Text
-        # patch['data'][6 + j]['x'] = [x_text]
-        # patch['data'][6 + j]['y'] = [y_text]
+        # Show only regions that have a filled area
+        if percent_voters[region] > 0:
+            x_text = x_[round(iN / 2)]
+            # x_text = max(x_text, 1000)
+            y_text = fig_cumsum['data'][0]['y'][round(i / 2)] / 2
+            # y_text = max(25e6, y_text)
+        else:
+            x_text = -1000
+            y_text = -1000
 
-        # patch['data'][6 + j]['textfont']['size'] = np.interp(
-        #     percent_voters[region],
-        #     [0, 0.2],
-        #     [0, tab2_cumsum_text['textfont']['size']]
-        # )
-        # patch['data'][6 + j]['text'] = "".join([
-        #     # f"{df['QT_APTOS_CUMSUM_PERCENT'][i-1] : 0.3f}% of voters live in<br>",
-        #     # f"{i / len(df) * 100 : 0.3f}% of counties",
-        #     f"{percent_voters[region]*100 :.2f}%"
-        # ])
+        # Text
+        patch['data'][6 + j]['x'] = [x_text]
+        patch['data'][6 + j]['y'] = [y_text]
 
-    print('\n\n\n')
+        patch['data'][6 + j]['textfont']['size'] = np.interp(
+            percent_voters[region],
+            [0, 0.2],
+            [8, cumsum['text']['textfont']['size']]
+        )
+        patch['data'][6 + j]['text'] = "".join([
+            # f"{df['QT_APTOS_CUMSUM_PERCENT'][i-1] : 0.3f}% of voters live in<br>",
+            # f"{i / len(df) * 100 : 0.3f}% of counties",
+            f"{percent_voters[region]*100 :.2f}%"
+        ])
 
     return patch
 
@@ -448,7 +441,7 @@ def update_tab2_map(n, hoverData, map):
 
 def draw_tab2_map(i, map):
     z = np.ones(i)
-    z = df['QT_APTOS_CUMSUM_PERCENT'][: i]
+    z = df['NM_REGIAO_INT'][: i]
 
     # Do nothing if hover did not change
     if np.array_equiv(z, map['data'][0]['z']): return dash.no_update

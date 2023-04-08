@@ -2,7 +2,7 @@
     "type": "scatter",
     "fill": "tozeroy",
     "marker": {
-        "color": "rgba(213, 194, 104, 0.42)"
+        "color": "#F0A500"
     },
     "mode": "lines",
     "hoverinfo": "skip",
@@ -11,5 +11,12 @@
     ],
     "y": [
         0
-    ]
+    ],
+    "colors": {
+        "Northeast": "#F08F6C",
+        "North": "#9A60F0",
+        "Central-West": "#F0EC78",
+        "South": "#90F0DC",
+        "Southeast": "#EF7FD9"
+    }
 }

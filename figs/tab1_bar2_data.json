@@ -1,0 +1,10 @@
+{
+    "orientation": "v",
+    "marker": {
+        "line": {
+            "color": "#1b1513"
+        }
+    },
+    "hoverinfo": "skip",
+    "hovertemplate": "%{y:,.0f} votes<extra>Total:<br>%{customdata[1]:,.0f} votes<br>%{customdata[0]:.2f}%</extra>"
+}
