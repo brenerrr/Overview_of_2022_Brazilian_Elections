@@ -35,68 +35,13 @@ else:
 
 # %% Figures
 
-# ****************************** Tab 1 ******************************
-# Results
-tab1_map_results = load_json('figs/tab1_map_data_results.json')
-tab1_map_delta = load_json('figs/tab1_map_data_delta.json')
-map_borders = load_json('figs/tab1_map_data_borders.json')
-map_names = load_json('figs/tab1_map_data_names.json')
-tab1_map_layout1 = load_json("figs/tab1_map_layout1.json", template_layout)
-tab1_map_layout2 = load_json("figs/tab1_map_layout2.json", template_layout)
-tab1_map_results.update(dict(
-    z=df['PERCENTAGE_BOLSONARO'].values,  # type: ignore
-    geojson=df.geometry.__geo_interface__,
-    locations=df.index,
-    customdata=df[['VOTOS_LULA', 'VOTOS_BOLSONARO', 'NM_MUNICIPIO', 'PERCENTAGE_LULA', 'PERCENTAGE_BOLSONARO', 'NM_REGIAO']],
-))
-
-# Regions borders
-map_borders.update(dict(
-    geojson=df_regions.geometry.__geo_interface__,
-    locations=df_regions.index,
-    z=[1.0] * df_regions.shape[0],
-    customdata=df_regions['NM_REGIAO'].values,
-))
-
-tab1_map = go.Figure([
-    tab1_map_results,
-    map_borders,
-    map_names,
-], layout=tab1_map_layout1)
-
+tab1_map = create_tab1_maps(df, df_regions, template_layout)
 
 bars = create_bars(df_regions, template_layout, colors)
-assert bars is not None
 
-# ****************************** Tab 2 ******************************
-# Cumsum
-tab2_cumsum_line = load_json('figs/tab2_cumsum_data_line.json')
-tab2_cumsum_filled = load_json('figs/tab2_cumsum_data_filled.json')
-tab2_cumsum_text = load_json('figs/tab2_cumsum_data_text.json')
-tab2_cumsum_layout = load_json('figs/tab2_cumsum_layout.json')
-tab2_cumsum_line.update(dict(
-    x=df.index + 1,
-    y=df.QT_APTOS.cumsum(),
-    customdata=df[['NM_MUNICIPIO']].reset_index().values,
-))
-tab2_cumsum = go.Figure([
-    tab2_cumsum_line,
-    *[tab2_cumsum_filled.copy() for _ in range(5)],
-    *[tab2_cumsum_text.copy() for _ in range(5)]],
-    tab2_cumsum_layout)
+cumsum = create_tab2_cumsum(df, template_layout)
 
-# Map
-tab2_map_results = load_json('figs/tab2_map_data_results.json')
-tab2_map_layout = load_json('figs/tab2_map_layout.json')
-customdata = df[['NM_MUNICIPIO', 'QT_APTOS']].reset_index()
-customdata['index'] = customdata['index'] + 1
-tab2_map_results.update(dict(
-    z=df[:213]['QT_APTOS_CUMSUM_PERCENT'],
-    geojson=df[:213].geometry.__geo_interface__,
-    locations=df[:213].index,
-    customdata=customdata[:213].values,
-))
-tab2_map = go.Figure([tab2_map_results, map_borders], tab2_map_layout)
+tab2_map = create_tab2_map(df, tab1_map['borders'], template_layout)
 
 
 # %% App
@@ -110,7 +55,7 @@ tabs_content = [
         html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
             html.Div(style={'flex': 1}, className='tab1-plot-background', children=[
                 dcc.Graph(
-                    figure=tab1_map,
+                    figure=tab1_map['fig'],
                     id='tab1-map',
                     clear_on_unhover=True,
                     className='tab1-map',
@@ -135,8 +80,8 @@ tabs_content = [
                 dcc.Graph(
                     figure=bars['2022 Results']['Aggregated'],
                     id='bar',
-                    animate=True,
-                    animation_options={'frame': {'redraw': True, }, 'transition': {'duration': 1500, 'ease': 'cubic-in-out', }, },
+                    # animate=True,
+                    # animation_options={'frame': {'redraw': False, }, 'transition': {'duration': 750, 'ease': 'cubic-in-out', }, },
                     config=config),
 
                 html.Div(
@@ -156,14 +101,14 @@ tabs_content = [
 
         dcc.Interval(
             id='tab1-interval-component',
-            interval=1 * 1000,  # in milliseconds
+            interval=60 * 1000,  # in milliseconds
             n_intervals=0
         )
     ]),
     # Tab 2
     html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
         html.Div(style={'flex': 1}, children=[
-            dcc.Graph(figure=tab2_cumsum, id='tab2-cumsum',),
+            dcc.Graph(figure=cumsum, id='tab2-cumsum',),
         ]),
 
         html.Div(style={'flex': 1}, children=[
@@ -332,11 +277,10 @@ def make_bar_aggregated(mask, value, bar, value_map):
 def toggle_tab1_map(option):
     if option == '2022 Results':
         z = df['PERCENTAGE_BOLSONARO'].values
-        layout = tab1_map_layout1
     else:
         z = df['DELTA'].values
-        layout = tab1_map_layout2
 
+    layout = tab1_map[option]
     patch = Patch()
     patch['data'][0]['z'] = z
     patch['layout'] = layout
