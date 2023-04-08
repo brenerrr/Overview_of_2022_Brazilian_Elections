@@ -9,7 +9,7 @@ from pandas import DataFrame
 import pandas as pd
 
 
-def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame]:
+def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame, DataFrame]:
 
     rename_dict = {
         'Nordeste': 'Northeast',
@@ -18,10 +18,11 @@ def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame]:
         'Sul': 'South',
         'Sudeste': 'Southeast',
     }
-    df = gpd.read_file('df.json', driver='GeoJSON').drop(columns='index')
-    df_2018 = gpd.read_file('df_2018.json', driver='GeoJSON').drop(columns='index')
-    df_counties = gpd.read_file(os.path.join('files', 'counties_geo.json'))
-    df_states = gpd.read_file(os.path.join('files', 'states_geo.json'))
+    df = gpd.read_file('files/df.json', driver='GeoJSON')
+    df_2018 = gpd.read_file('files/df_2018.json', driver='GeoJSON')
+    df_zz = gpd.read_file('files/df_zz.json', driver='GeoJSON')
+    df_counties = gpd.read_file('files/counties_geo.json')
+    df_states = gpd.read_file('files/states_geo.json')
     df_counties = df_counties.set_index(keys=['SG_UF', 'NM_MUNICIPIO']).sort_values(by=['SG_UF', 'NM_MUNICIPIO'])
 
     def calculate_percentages(df):
@@ -84,7 +85,7 @@ def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame]:
         "North": 3,
         "Northeast": 4,
     })
-    return df, df_regions
+    return df, df_regions, df_zz
 
 
 def load_json(filename, additional_dict=None) -> dict:
@@ -95,7 +96,7 @@ def load_json(filename, additional_dict=None) -> dict:
     return additional_dict
 
 
-def create_bars(df, df_regions, template_layout, colors):
+def create_bars(df, df_regions, df_zz, template_layout, colors):
 
     # Bar plots
     layout_bar1 = load_json('figs/tab1_bar1_layout.json', template_layout)
@@ -112,22 +113,7 @@ def create_bars(df, df_regions, template_layout, colors):
     bar4_data = load_json('figs/tab1_bar4_data.json')
 
     # Bar 1 and 2
-
-    customdata1 = [
-
-    ]
-
-    customdata2 = dict(
-        LULA=[
-            df['VOTOS_LULA'].sum() / (df['VOTOS_LULA'] + df['VOTOS_BOLSONARO']).sum() * 100,
-            df['VOTOS_LULA'].sum()
-        ],
-        BOLSONARO=[
-            df['VOTOS_BOLSONARO'].sum() / (df['VOTOS_BOLSONARO'] + df['VOTOS_LULA']).sum() * 100,
-            df['VOTOS_BOLSONARO'].sum()
-        ]
-    )
-
+    all_votes = df_zz[['VOTOS_BOLSONARO', 'VOTOS_LULA']].sum().sum() + df[['VOTOS_LULA', 'VOTOS_BOLSONARO']].sum().sum()
     for name in ['LULA', 'BOLSONARO']:
         traces_bar1.append(go.Bar(
             x=df_regions['NM_REGIAO'],
@@ -139,9 +125,11 @@ def create_bars(df, df_regions, template_layout, colors):
         ))
         for _, df_ in df_regions.iterrows():
 
+            candidate_votes = df_regions[f'VOTOS_{name}'].sum() + df_zz[f'VOTOS_{name}'].sum()
+            percent_votes = (df_regions[f'VOTOS_{name}'].sum() + df_zz[f'VOTOS_{name}'].sum()) / all_votes * 100
             customdata = np.array([
-                (df_regions[f'VOTOS_{name}'].sum() / (df_regions[f'VOTOS_LULA'] + df_regions[f'VOTOS_BOLSONARO']).sum() * 100),
-                df_regions[f'VOTOS_{name}'].sum()
+                percent_votes,
+                candidate_votes
             ]).reshape(1, -1)
 
             traces_bar2.append(go.Bar(
@@ -192,10 +180,6 @@ def create_bars(df, df_regions, template_layout, colors):
         }
     }
 
-    # bars_dict['2022 vs 2018 Comparison']['Aggregated'].show()
-    # bars_dict['2022 vs 2018 Comparison']['Expanded'].show()
-    # bars_dict['2022 Results']['Aggregated'].show()
-    # bars_dict['2022 Results']['Expanded'].show()
     return bars_dict
 
 
@@ -239,7 +223,7 @@ def create_tab1_maps(df, df_regions, template_layout):
     return output
 
 
-def create_tab2_cumsum(df, template_layout):
+def create_tab2_cumsum(df: DataFrame, template_layout: dict) -> dict:
 
     cumsum_line = load_json('figs/tab2_cumsum_data_line.json')
     cumsum_filled = load_json('figs/tab2_cumsum_data_filled.json')

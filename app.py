@@ -12,7 +12,7 @@ pio.templates.default = "simple_white"
 
 print("Starting")
 
-df, df_regions = load_results()
+df, df_regions, df_zz = load_results()
 
 rgba_red = 'rgba(178,24,43,1)'
 rgba_blue = 'rgba(33,102,172,1)'
@@ -37,7 +37,7 @@ else:
 
 tab1_map = create_tab1_maps(df, df_regions, template_layout)
 
-bars = create_bars(df, df_regions, template_layout, colors)
+bars = create_bars(df, df_regions, df_zz, template_layout, colors)
 
 cumsum = create_tab2_cumsum(df, template_layout)
 
