@@ -1,6 +1,6 @@
 {
 "type": "FeatureCollection",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4674" } },
 "features": [
 { "type": "Feature", "properties": { "SG_UF": "ZZ", "NM_MUNICIPIO": "ABIDJÃ", "AREA_KM2": null, "QT_APTOS": 77, "QT_COMPARECIMENTO": 43, "QT_ABSTENCOES": 34, "VOTOS_BOLSONARO": 15.0, "VOTOS_LULA": 26.0, "VOTOS_B_N": null, "UE2009": 0, "UE2010": 3, "UE2011": 0, "UE2013": 0, "UE2015": 0, "UE2020": 0 }, "geometry": null },
 { "type": "Feature", "properties": { "SG_UF": "ZZ", "NM_MUNICIPIO": "ABU DHABI", "AREA_KM2": null, "QT_APTOS": 2251, "QT_COMPARECIMENTO": 1050, "QT_ABSTENCOES": 1201, "VOTOS_BOLSONARO": 593.0, "VOTOS_LULA": 404.0, "VOTOS_B_N": 53.0, "UE2009": 16, "UE2010": 0, "UE2011": 0, "UE2013": 0, "UE2015": 0, "UE2020": 0 }, "geometry": null },

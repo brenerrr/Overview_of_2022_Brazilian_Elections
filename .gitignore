@@ -11,3 +11,5 @@ files/2018
 __pycache__
 
 *ipynb
+
+!files/state2region.csv

@@ -22,7 +22,9 @@ def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame, DataFrame
     df_2018 = gpd.read_file('files/df_2018.json', driver='GeoJSON')
     df_zz = gpd.read_file('files/df_zz.json', driver='GeoJSON')
     df_counties = gpd.read_file('files/counties_geo.json')
-    df_states = gpd.read_file('files/states_geo.json')
+    state2region = pd.read_csv('files/state2region.csv')
+    df_regions_geo = gpd.read_file(('files/regions_geo.json'))
+
     df_counties = df_counties.set_index(keys=['SG_UF', 'NM_MUNICIPIO']).sort_values(by=['SG_UF', 'NM_MUNICIPIO'])
 
     def calculate_percentages(df):
@@ -60,19 +62,22 @@ def load_results(name: str = 'df.json') -> tuple[DataFrame, DataFrame, DataFrame
         'VOTOS_LULA': sum,
         'AREA_KM2': sum,
     })
-    df_regions = df_states.merge(df_regions, left_on='SG_UF', right_index=True)
-    columns = ['geometry', 'NM_REGIAO', 'VOTOS_BOLSONARO', 'VOTOS_LULA']
-    df_regions = df_regions[columns].dissolve(by='NM_REGIAO', aggfunc=sum, as_index=False)
+    df_regions = state2region.merge(df_regions, left_on='SG_UF', right_index=True)
+    columns = ['NM_REGIAO', 'VOTOS_BOLSONARO', 'VOTOS_LULA']
+    df_regions = df_regions[columns].groupby('NM_REGIAO').sum()
     df_regions['PERCENTAGE_LULA'] = df_regions['VOTOS_LULA'] / (df_regions['VOTOS_BOLSONARO'] + df_regions['VOTOS_LULA']) * 100
     df_regions['PERCENTAGE_BOLSONARO'] = 100 - df_regions['PERCENTAGE_LULA']
 
     df_regions = df_regions.merge(delta_region['DELTA'], left_on='NM_REGIAO', right_index=True)
 
     # Add data from 2018
-    bolsonaro_2018 = df_2018.groupby('NM_REGIAO')['VOTOS_BOLSONARO'].sum().reset_index(drop=True)
-    haddad_2018 = df_2018.groupby('NM_REGIAO')['VOTOS_HADDAD'].sum().reset_index(drop=True)
+    bolsonaro_2018 = df_2018.groupby('NM_REGIAO')['VOTOS_BOLSONARO'].sum()
+    haddad_2018 = df_2018.groupby('NM_REGIAO')['VOTOS_HADDAD'].sum()
     df_regions['PERCENTAGE_TOTAL_BOLSONARO_2018'] = bolsonaro_2018 / (bolsonaro_2018 + haddad_2018).sum() * 100
     df_regions['PERCENTAGE_TOTAL_BOLSONARO'] = df_regions['VOTOS_BOLSONARO'] / (df_regions['VOTOS_BOLSONARO'] + df_regions['VOTOS_LULA']).sum() * 100
+
+    # Add geometry
+    df_regions = df_regions_geo.merge(df_regions, on='NM_REGIAO')
 
     # Rename regions to English
     df_regions['NM_REGIAO'] = df_regions['NM_REGIAO'].map(rename_dict)
