@@ -1,9 +1,8 @@
 {
   "type": "choroplethmapbox",
-  "hoverinfo": "skip",
-  "showscale": true,
   "marker_line_width": 0,
-  "hovertemplate": "<b>z<extra></extra>",
+  "hoverinfo": "skip",
+  "hovertemplate": "<b>%{customdata[1]} </b><br><br>2018: %{customdata[2]:.2f}% of votes<br>2022: %{customdata[0]:.2f}% of votes<extra>Bolsonaro's votes</extra>",
   "coloraxis": "coloraxis",
   "marker": {
     "line": {

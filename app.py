@@ -1,4 +1,6 @@
 # %% Import modules
+import src.preprocessing as pp
+import importlib
 from collections import defaultdict
 import dash_bootstrap_components as dbc
 import sys
@@ -38,7 +40,9 @@ else:
 
 # %% Figures
 
-tab1_map = create_tab1_maps(df, df_regions, template_layout)
+importlib.reload(pp)
+
+tab1_map = pp.create_tab1_maps(df, df_regions, df_2018, template_layout)
 
 bars = create_bars(df, df_regions, df_zz, df_2018, df_zz_2018, template_layout, colors)
 
@@ -46,6 +50,7 @@ cumsum = create_tab2_cumsum(df, template_layout)
 
 tab2_map = create_tab2_map(df, tab1_map['borders'], template_layout)
 
+# tab1_map['fig'].show()
 
 # %% App
 config = {
@@ -58,7 +63,7 @@ tabs_content = [
         html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
             html.Div(style={'flex': 1}, className='tab1-plot-background', children=[
                 dcc.Graph(
-                    figure=tab1_map['fig'],
+                    figure=tab1_map['2022 Results']['fig'],
                     id='tab1-map',
                     clear_on_unhover=True,
                     className='tab1-map',
@@ -275,12 +280,14 @@ def make_bar_aggregated(mask, value, fig_bar, value_map):
     prevent_initial_call=True
 )
 def toggle_tab1_map(option):
-    if option == '2022 Results':
-        z = df['PERCENTAGE_BOLSONARO'].values
-    else:
-        z = df['DELTA'].values
+    # if option == '2022 Results':
+    # z = df['PERCENTAGE_BOLSONARO'].values
+    # else:
+    # z = df['DELTA'].values
 
-    layout = tab1_map[option]
+    return tab1_map[option]['fig']
+
+    layout = tab1_map[option]['layout']
     patch = Patch()
     patch['data'][0]['z'] = z
     patch['layout'] = layout

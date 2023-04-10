@@ -8,8 +8,8 @@
         20
       ],
       "ticktext": [
-        "Less votes",
-        "More votes"
+        "Lost votes",
+        "Gained votes"
       ]
     }
   }

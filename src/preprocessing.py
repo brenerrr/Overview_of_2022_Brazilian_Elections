@@ -57,6 +57,7 @@ def load_results(
     delta_region['DELTA'] = delta_region.VOTOS_BOLSONARO_PERCENT - delta_region.VOTOS_BOLSONARO_PERCENT_2018
 
     df = df.sort_values(by='QT_APTOS', ascending=False)
+    df_2018 = df_2018.loc[df.index, :]
     df = df.reset_index(drop=True)
 
     df['QT_APTOS_CUMSUM_PERCENT'] = 100 - (df.QT_APTOS.cumsum() / df.QT_APTOS.sum() * 100)
@@ -216,7 +217,7 @@ def create_bars(df: DataFrame,
     return bars_dict
 
 
-def create_tab1_maps(df: DataFrame, df_regions: DataFrame, template_layout: dict) -> dict:
+def create_tab1_maps(df: DataFrame, df_regions: DataFrame, df_2018: DataFrame, template_layout: dict) -> dict:
 
     tab1_map_results = load_json('figs/tab1_map_data_results.json')
     tab1_map_delta = load_json('figs/tab1_map_data_delta.json')
@@ -224,11 +225,26 @@ def create_tab1_maps(df: DataFrame, df_regions: DataFrame, template_layout: dict
     map_names = load_json('figs/tab1_map_data_names.json')
     tab1_map_layout1 = load_json("figs/tab1_map_layout1.json", template_layout)
     tab1_map_layout2 = load_json("figs/tab1_map_layout2.json", template_layout)
+
     tab1_map_results.update(dict(
         z=df['PERCENTAGE_BOLSONARO'].values,  # type: ignore
         geojson=df.geometry.__geo_interface__,
         locations=df.index,
         customdata=df[['VOTOS_LULA', 'VOTOS_BOLSONARO', 'NM_MUNICIPIO', 'PERCENTAGE_LULA', 'PERCENTAGE_BOLSONARO', 'NM_REGIAO']],
+    ))
+
+    customdata = df[['PERCENTAGE_BOLSONARO', 'NM_MUNICIPIO']].values
+    customdata = np.hstack((
+        df[['PERCENTAGE_BOLSONARO', 'NM_MUNICIPIO']].values,
+        df_2018[['PERCENTAGE_BOLSONARO']].values,
+        df[['NM_REGIAO']].values
+    ))
+
+    tab1_map_delta.update(dict(
+        z=df['DELTA'].values,  # type: ignore
+        geojson=df.geometry.__geo_interface__,
+        locations=df.index,
+        customdata=customdata,
     ))
 
     # Regions borders
@@ -239,18 +255,30 @@ def create_tab1_maps(df: DataFrame, df_regions: DataFrame, template_layout: dict
         customdata=df_regions['NM_REGIAO'].values,
     ))
 
-    tab1_map1 = go.Figure([
+    fig1 = go.Figure([
         tab1_map_results,
         map_borders,
         map_names,
     ], layout=tab1_map_layout1)
 
+    fig2 = go.Figure([
+        tab1_map_delta,
+        map_borders,
+        map_names,
+    ], layout=tab1_map_layout2)
+
     output = {
-        'fig': tab1_map1,
-        '2022 Results': tab1_map_layout1,
-        '2022 vs 2018 Comparison': tab1_map_layout2,
+        '2022 Results': {
+            'layout': tab1_map_layout1,
+            'fig': fig1,
+        },
+        '2022 vs 2018 Comparison': {
+            'layout': tab1_map_layout2,
+            'fig': fig2,
+        },
         'borders': map_borders,
         'names': map_names,
+
     }
 
     return output
