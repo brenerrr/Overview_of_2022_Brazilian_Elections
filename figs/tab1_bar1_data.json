@@ -4,5 +4,7 @@
         "line": {
             "color": "#1b1513"
         }
-    }
+    },
+    "hoverinfo": "skip",
+    "hovertemplate": "%{customdata[0]}<br>%{customdata[1]:,.0f} votes<extra></extra>"
 }

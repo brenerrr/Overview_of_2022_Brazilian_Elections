@@ -1,3 +1,4 @@
+# %% Import modules
 from collections import defaultdict
 import dash_bootstrap_components as dbc
 import sys
@@ -8,11 +9,13 @@ import numpy as np
 import plotly.io as pio
 from src.preprocessing import *
 
+
+# Load data
 pio.templates.default = "simple_white"
 
 print("Starting")
 
-df, df_regions, df_zz = load_results()
+df, df_regions, df_zz, df_2018, df_zz_2018 = load_results()
 
 rgba_red = 'rgba(178,24,43,1)'
 rgba_blue = 'rgba(33,102,172,1)'
@@ -37,7 +40,7 @@ else:
 
 tab1_map = create_tab1_maps(df, df_regions, template_layout)
 
-bars = create_bars(df, df_regions, df_zz, template_layout, colors)
+bars = create_bars(df, df_regions, df_zz, df_2018, df_zz_2018, template_layout, colors)
 
 cumsum = create_tab2_cumsum(df, template_layout)
 

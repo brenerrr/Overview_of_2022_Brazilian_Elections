@@ -4,5 +4,7 @@
         "line": {
             "color": "#1b1513"
         }
-    }
+    },
+    "hoverinfo": "skip",
+    "hovertemplate": "Bolsonaro's electorate in the %{text} increased by %{y:.2f}%<extra></extra>"
 }

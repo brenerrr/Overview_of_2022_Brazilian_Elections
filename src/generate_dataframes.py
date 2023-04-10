@@ -217,7 +217,7 @@ df.to_file('../files/df.json', driver='GeoJSON', index=False)
 
 # %% Export dataframe of international data
 
-df_zz.to_file('../files/df_zz.json', driver='GeoJSON', index=False)
+df_zz[['NM_MUNICIPIO', 'VOTOS_BOLSONARO', 'VOTOS_LULA']].to_csv('../files/df_zz.csv', index=False)
 # %% Perform the same steps for 2018 data
 
 directory_2018 = os.path.join('../files', '2018')
@@ -274,8 +274,12 @@ df_ballot_models_2018 = pd.concat(ballot_models_list, axis=1)
 df_ballot_models_2018 = df_ballot_models_2018.groupby(df_ballot_models_2018.columns, axis=1).sum()
 df_ballot_models_2018 = df_ballot_models_2018.join(nr_ballots[['SG_UF', 'NM_MUNICIPIO']]).groupby(['SG_UF', 'NM_MUNICIPIO']).sum()
 
-# Merge everything
+
 df_final_2018 = df_condensed_2018.join(df_votes_2018).join(df_ballot_models_2018)
+
+# Export zz data
+df_final_2018.loc['ZZ', ['VOTOS_BOLSONARO', 'VOTOS_HADDAD']].to_csv('../files/df_zz_2018.csv')
+# %%
 df_final_2018 = gdf_counties[['geometry', 'AREA_KM2']].join(df_final_2018, how='right')
 df_final_2018 = df_final_2018.reset_index()
 df_zz_2018 = df_final_2018[df_final_2018.SG_UF == 'ZZ']
