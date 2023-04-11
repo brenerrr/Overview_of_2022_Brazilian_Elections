@@ -13,3 +13,5 @@ __pycache__
 *ipynb
 
 !files/state2region.csv
+
+!files/df_zz*
