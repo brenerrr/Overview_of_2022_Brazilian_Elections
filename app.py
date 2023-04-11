@@ -114,20 +114,27 @@ tabs_content = [
         )
     ]),
     # Tab 2
-    html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
-        html.Div(style={'flex': 1}, children=[
-            dcc.Graph(figure=cumsum['fig'], id='tab2-cumsum',),
+    html.Div(style={'display': 'flex', 'flex-direction': 'column'}, children=[
+
+        html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
+            html.Div(style={'flex': 1}, children=[
+                dcc.Graph(figure=cumsum['fig'], id='tab2-cumsum',),
+            ]),
+
+            html.Div(style={'flex': 1}, children=[
+                dcc.Graph(figure=tab2_map, id='tab2-map',),
+            ]),
         ]),
 
-        html.Div(style={'flex': 1}, children=[
-            dcc.Graph(figure=tab2_map, id='tab2-map',),
-        ]),
+        html.Div(id=("tab2-text"), className='tab2-text'),
 
         dcc.Interval(
             id='tab2-interval-component',
-            interval=1 * 1000,  # in milliseconds
+            interval=2 * 1000,  # in milliseconds
             n_intervals=0
         )
+
+
 
     ]),
 
@@ -167,25 +174,37 @@ app.layout = html.Div(className='main', children=[
     Output('tab-content', 'children'),
     Input('tabs', 'active_tab'),
 )
-def update_tab(tab):
-    return tabs[tab]
+def update_tab(active_tab):
+    return tabs[active_tab]
 
 # ****************************** Tab 1 ******************************
 
 
 @ app.callback(
+    Output('tab2-text', 'children'),
+    Input('tab-content', 'children'),
+    State('tabs', 'active_tab'),
+)
+def update_tab2_text(tab_content, active_tab):
+    if active_tab == 'tab-1':
+        text = texts_html['tab2']
+        return html.Div(text)
+
+
+@ app.callback(
     Output('tab1-text', 'children'),
     Input('tab1-map', 'figure'),
-    State('tab1-text', 'children')
+    State('tab1-text', 'children'),
+    State('map-radio', 'value')
 )
-def update_tab1_text(fig_map, current_text):
+def update_tab1_text(fig_map, current_text, radio_map):
     mask = np.array(fig_map['data'][1]['z'], dtype=bool)
-    if mask.any():
-        region = df_regions['NM_REGIAO'][mask].values[0]
-    else:
+    if mask.all():
         region = 'None'
+    else:
+        region = df_regions['NM_REGIAO'][mask].values[0]
 
-    text = texts_html.get('tab1-text', {}).get(region, '')
+    text = texts_html.get('tab1', {}).get(radio_map, {}).get(region, '')
     if text == current_text:
         return dash.no_update
     else:

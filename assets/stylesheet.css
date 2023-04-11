@@ -42,7 +42,8 @@ input[type="radio"] {
     accent-color: #F0A500;
 }
 
-.tab1-text {
+.tab1-text,
+.tab2-text {
     align-self: center;
     text-align: justify;
     width: 80%;

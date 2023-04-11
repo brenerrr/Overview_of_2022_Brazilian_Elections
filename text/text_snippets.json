@@ -1,10 +1,21 @@
 {
-    "tab1-text": {
-        "Northeast": "Traditionally a stronghold for the Workers' Party and its leader Lula, the Northeast region played an important role in his victory. With the second largest population in Brazil, its support was decisive.",
-        "None": "A close election saw Lula emerge as the winner, defeating the incumbent president Jair Bolsonaro.",
-        "North": "Despite controversial environmental policies that impacted the region heavily, Bolsonaro won more votes than Lula in the North.",
-        "Central-West": "With a relatively small population, the Central-West region's large agricultural sector has been a key source of support for Bolsonaro, but had little impact on the overall election results.",
-        "South": "A traditional stronghold for right-wing politics, the South gave Bolsonaro his largest victory margin.",
-        "Southeast": "Home to Brazil's largest population and economy, Lula's loss in the Southeast made his overall victory more difficult to achieve."
-    }
+    "tab1": {
+        "2022 Results": {
+            "Northeast": "Traditionally a stronghold for the Workers' Party and its leader Lula, the Northeast region played an important role in his victory. With the second largest population in Brazil, its support was decisive.",
+            "None": "A close election saw Lula emerge as the winner, defeating the incumbent president Jair Bolsonaro.",
+            "North": "Despite controversial environmental policies that impacted the region heavily, Bolsonaro won more votes than Lula in the North.",
+            "Central-West": "With a relatively small population, the Central-West region's large agricultural sector has been a key source of support for Bolsonaro, but had little impact on the overall election results.",
+            "South": "A traditional stronghold for right-wing politics, the South gave Bolsonaro his largest victory margin.",
+            "Southeast": "Home to Brazil's largest population and economy, Lula's loss in the Southeast made his overall victory more difficult to achieve."
+        },
+        "2022 vs 2018 Comparison": {
+            "None": "This map illustrates the areas where Bolsonaro experienced a decline in votes compared to the previous election. Despite securing the majority of votes in most regions, he lost more than 5% of all votes. This ultimately led to Lula's victory.",
+            "Northeast": "The Northeast was the only region where Bolsonaro experienced a slight increase in support, although it was not enough to significantly impact Lula's numbers in the region.",
+            "North": "Bolsonaro's support in the North remained largely stable between the two elections. However, there was a back and forth battle between larger cities like Manaus and Rio Branco, which became less supportive, and smaller counties where his electorate grew.",
+            "Central-West": "Like the South, Bolsonaro's support in the Central-West also saw a decrease, especially at areas that border the Southeast. On the opposite trend, areas closer to the Amazon saw an increase in his support. ",
+            "South": "In the South, which is one of Bolsonaro's primary electorates, over 6% of his voters changed their voting preference between elections. Bolsonaro suffered a greater loss of support in larger cities, especially those located along the coastline.",
+            "Southeast": "The Southeast dealt a significant blow to Bolsonaro's 2022 campaign as he experienced a decline of over 10% in votes, despite still garnering most votes in the region. This decrease is particularly significant as the Southeast is the most populous region in the country."
+        }
+    },
+    "tab2": "The Brazilian population is largely concentrated in big cities, especially at the Southeast. This is why losing support in this region is so detrimental. The figures are dynamic, feel free to hover over the left plot to see where the most populated counties are."
 }
