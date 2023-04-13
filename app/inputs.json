@@ -1,5 +1,5 @@
 {
-    "tab1_update_interval": 3,
+    "tab1_update_interval": 2,
     "tab2_update_interval": 3,
     "port": 80,
     "host": "0.0.0.0",
