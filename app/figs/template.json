@@ -7,6 +7,7 @@
         "color": "#F0A500"
     },
     "yaxis": {
+        "fixedrange": true,
         "color": "#F0A500",
         "gridcolor": "#F0A500",
         "gridwidth": 2,
@@ -27,7 +28,8 @@
         "pad": 0
     },
     "xaxis": {
-        "showline": false
+        "showline": false,
+        "fixedrange": true
     },
     "mapbox": {
         "style": "mapbox://styles/brenerrr/clg04kyel000601qi71eiivy9",

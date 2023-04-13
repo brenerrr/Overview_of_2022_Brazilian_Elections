@@ -30,6 +30,12 @@ def load_results(
     state2region = pd.read_csv('files/state2region.csv')
     df_regions_geo = gpd.read_file(('files/regions_geo.json'))
 
+    # Get rid of unnecessary columns
+    cols = ['AREA_KM2', 'QT_COMPARECIMENTO', 'QT_ABSTENCOES', 'VOTOS_B_N', 'UE2009',
+            'UE2010', 'UE2011', 'UE2013', 'UE2015', 'UE2020']
+    df = df.drop(columns=cols)
+    df_2018 = df_2018.drop(columns=cols)
+
     df_counties = df_counties.set_index(keys=['SG_UF', 'NM_MUNICIPIO']).sort_values(by=['SG_UF', 'NM_MUNICIPIO'])
 
     def calculate_percentages(df):
@@ -65,8 +71,7 @@ def load_results(
     # Votes per region
     df_regions = df.groupby('SG_UF').agg({
         'VOTOS_BOLSONARO': sum,
-        'VOTOS_LULA': sum,
-        'AREA_KM2': sum,
+        'VOTOS_LULA': sum
     })
     df_regions = state2region.merge(df_regions, left_on='SG_UF', right_index=True)
     columns = ['NM_REGIAO', 'VOTOS_BOLSONARO', 'VOTOS_LULA']
@@ -133,7 +138,7 @@ def create_bars(df: DataFrame,
 
     all_votes_2018 = df_zz_2018[['VOTOS_BOLSONARO', 'VOTOS_HADDAD']].sum().sum() + df_2018[['VOTOS_HADDAD', 'VOTOS_BOLSONARO']].sum().sum()
 
-    # Bar 1 and 2
+    # Bar 1 and 2 (2022 Results)
     for name in ['LULA', 'BOLSONARO']:
         customdata = np.array([
             [name.capitalize()] * df_regions.shape[0],
@@ -170,7 +175,7 @@ def create_bars(df: DataFrame,
                 **bar2_data
             ))
 
-    # Bar 3 and 4
+    # Bar 3 and 4 (2022 vs 2018 Results)
     traces_bar3.append(go.Bar(
         x=df_regions['NM_REGIAO'],
         y=df_regions[f'DELTA'],
@@ -322,7 +327,6 @@ def create_tab2_map(df: DataFrame, borders: dict, template_layout: dict):
     customdata = df[['NM_MUNICIPIO', 'QT_APTOS']].reset_index()
     customdata['index'] = customdata['index'] + 1
     map_results.update(dict(
-        # z=df[:213]['QT_APTOS_CUMSUM_PERCENT'],
         z=df[:213]['NM_REGIAO_INT'],
         geojson=df[:213].geometry.__geo_interface__,
         locations=df[:213].index,

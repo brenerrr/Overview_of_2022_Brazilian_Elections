@@ -14,8 +14,8 @@ body {
 }
 
 .main {
-    border: 3px solid #F0A500;
-    border-radius: 15px;
+    /* border: 3px solid #F0A500; */
+    /* border-radius: 15px; */
     height: 800px;
     width: 1200px;
     background-color: #1b1513;
@@ -23,17 +23,18 @@ body {
 }
 
 h1 {
+    visibility: hidden;
     margin-bottom: 0px;
     margin-left: 10px;
     text-align: center;
 }
 
-.radio {
-    font-size: 16px;
+.bar-radio,
+.map-radio {
+    /* font-size: 16px; */
     margin: auto;
     text-align: center;
     padding-top: 15px;
-    /* border: 3px solid #292b26; */
 
 }
 
@@ -46,10 +47,14 @@ input[type="radio"] {
 .tab2-text {
     align-self: center;
     text-align: justify;
+
     width: 80%;
+
     margin: 20px 0 0 0;
-    border: 1px solid #1b1513;
-    padding: 10px;
+    border: 3px solid #F0A500;
+    border-radius: 15px;
+
+    padding: 8px;
     font-size: large;
 
 }
@@ -86,19 +91,6 @@ input[type="radio"] {
     /* --bs-nav-tabs-border-width: 3px; */
 
 }
-
-
-
-/*
-.nav-tabs {
-    background-color: #1b1b13;
-} */
-
-/* .active-tab { */
-/* background-color: #F0A500 !important; */
-
-/* padding: 20px; */
-/* } */
 
 .active-tab-label {
     /* background-color: #F0A500 !important; */

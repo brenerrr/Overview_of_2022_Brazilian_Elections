@@ -1,6 +1,6 @@
 # %% Import modules
+import logging
 import src.preprocessing as pp
-import importlib
 import dash_bootstrap_components as dbc
 from dash import html, dcc, Input, Output, Patch, State, ctx
 import dash
@@ -8,51 +8,48 @@ import numpy as np
 import plotly.io as pio
 from src.preprocessing import *
 import flask
-
-
-# Load data
 pio.templates.default = "simple_white"
 
 inputs = load_json("inputs.json")
-print("Starting dashboard with the following inputs")
-print(inputs)
 
+# Set logger
+logging.basicConfig()
+logger = logging.getLogger('logger')
+logging_level = getattr(logging, inputs['logging_level'].upper())
+logger.setLevel(logging_level)
+logger.info('\n\nStarting app with the following inputs')
+logger.info(json.dumps(inputs, indent=2) + '\n\n')
+
+# Load data
 df, df_regions, df_zz, df_2018, df_zz_2018 = load_results()
-
 colors = dict(BOLSONARO=inputs["blue"], LULA=inputs["red"])
 texts_html = load_json('text/text_snippets.json')
 template_layout = load_json('figs/template.json')
 
-
+df.columns
+# %%
+# Mapbox token
 try:
     with open('./mapbox_token.txt', 'r') as f:
         token = f.read()
-        print('Found mapbox token.')
+        logger.debug('Found mapbox token.\n')
+        template_layout['mapbox']['accesstoken'] = token
 except:
-    token = None
-
-if token is None:
+    logger.warning('Mapbox token not found. Using default white background\n')
     template_layout['mapbox']['style'] = 'white-bg'
-else:
-    template_layout['mapbox']['accesstoken'] = token
 
 # %% Figures
+logger.debug('Creating initial figures\n')
 
-importlib.reload(pp)
-
-tab1_map = pp.create_tab1_maps(df, df_regions, df_2018, template_layout)
-
+tab1_map = create_tab1_maps(df, df_regions, df_2018, template_layout)
 bars = create_bars(df, df_regions, df_zz, df_2018, df_zz_2018, template_layout, colors)
-
 cumsum = create_tab2_cumsum(df, template_layout)
-
 tab2_map = create_tab2_map(df, tab1_map['borders'], template_layout)
-
-# tab1_map['fig'].show()
-
 # %% App
+logger.debug('Setting the app configuration\n')
+
 config = {
-    # 'modeBarButtonsToRemove': ['select', 'lasso2d', 'pan', 'zoom', 'autoScale', 'zoomIn', 'zoomOut'],
+    'modeBarButtonsToRemove': ['select', 'lasso2d', 'pan', 'zoom', 'autoScale', 'zoomIn', 'zoomOut'],
     'displaylogo': False}
 tabs_content = [
 
@@ -65,7 +62,6 @@ tabs_content = [
                     id='tab1-map',
                     clear_on_unhover=True,
                     className='tab1-map',
-                    style={'border-radius': '15px', 'background-color': 'white'},
                     config=config
                 ),
 
@@ -83,12 +79,9 @@ tabs_content = [
 
 
             html.Div(style={'flex': 1, 'flext-direction': 'row'}, children=[
-                # html.Button('Change Plot Mode', id='bar-button', n_clicks=0),
                 dcc.Graph(
                     figure=bars['2022 Results']['Aggregated'],
                     id='bar',
-                    # animate=True,
-                    # animation_options={'frame': {'redraw': False, }, 'transition': {'duration': 750, 'ease': 'cubic-in-out', }, },
                     config=config),
 
                 html.Div(
@@ -96,7 +89,7 @@ tabs_content = [
                         ['Aggregated', 'Expanded'],
                         'Aggregated',
                         inline=True,
-                        className='radio',
+                        className='bar-radio',
                         id='bar-radio'
                     )
                 )
@@ -105,7 +98,9 @@ tabs_content = [
 
         ]),
 
-        html.Div(id=("tab1-text"), className='tab1-text'),
+        html.Div(id=("tab1-text"), className='tab1-text', children=[
+            html.Div(texts_html['tab1']['2022 Results']['None'])
+        ]),
 
         dcc.Interval(
             id='tab1-interval-component',
@@ -118,11 +113,19 @@ tabs_content = [
 
         html.Div(style={'display': 'flex', 'flex-direction': 'row'}, children=[
             html.Div(style={'flex': 1}, children=[
-                dcc.Graph(figure=cumsum['fig'], id='tab2-cumsum',),
+                dcc.Graph(
+                    figure=cumsum['fig'],
+                    id='tab2-cumsum',
+                    config=config
+                ),
             ]),
 
             html.Div(style={'flex': 1}, children=[
-                dcc.Graph(figure=tab2_map, id='tab2-map',),
+                dcc.Graph(
+                    figure=tab2_map,
+                    id='tab2-map',
+                    config=config
+                ),
             ]),
         ]),
 
@@ -140,12 +143,10 @@ tabs_content = [
     ]),
 
 ]
-tabs_name = ['tab-0', 'tab-1']
+tabs_name = ['tab1', 'tab2']
 tabs = dict(zip(tabs_name, tabs_content))
 
-
-server = flask.Flask(__name__)  # define flask app.server
-
+server = flask.Flask(__name__)
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
@@ -159,15 +160,30 @@ app.layout = html.Div(className='main', children=[
 
     html.Br(),
 
-    dbc.Tabs(id='tabs', class_name='tabs', children=[
-        dbc.Tab(id=tabs_name[0], class_name="tab-individual", active_tab_class_name='active-tab', active_label_class_name='active-tab-label', label='Who won?'),
-        dbc.Tab(id=tabs_name[1], class_name="tab-individual", active_tab_class_name='active-tab', active_label_class_name='active-tab-label', label='How concentrated are voters?'),
+    dbc.Tabs(id='tabs', class_name='tabs', active_tab=tabs_name[0], children=[
+
+        dbc.Tab(
+            id=tabs_name[0],
+            tab_id=tabs_name[0],
+            class_name="tab-individual",
+            active_tab_class_name='active-tab',
+            active_label_class_name='active-tab-label',
+            label='Who won?'
+        ),
+
+        dbc.Tab(
+            id=tabs_name[1],
+            tab_id=tabs_name[1],
+            class_name="tab-individual",
+            active_tab_class_name='active-tab',
+            active_label_class_name='active-tab-label',
+            label='How concentrated are voters?'
+        )
     ]),
 
     html.Br(),
 
     html.Div(id='tab-content'),
-
 
 ])
 
@@ -184,23 +200,13 @@ def update_tab(active_tab):
 
 
 @ app.callback(
-    Output('tab2-text', 'children'),
-    Input('tab-content', 'children'),
-    State('tabs', 'active_tab'),
-)
-def update_tab2_text(tab_content, active_tab):
-    if active_tab == 'tab-1':
-        text = texts_html['tab2']
-        return html.Div(text)
-
-
-@ app.callback(
     Output('tab1-text', 'children'),
     Input('tab1-map', 'figure'),
     State('tab1-text', 'children'),
     State('map-radio', 'value')
 )
 def update_tab1_text(fig_map, current_text, radio_map):
+
     mask = np.array(fig_map['data'][1]['z'], dtype=bool)
     if mask.all():
         region = 'None'
@@ -208,6 +214,7 @@ def update_tab1_text(fig_map, current_text, radio_map):
         region = df_regions['NM_REGIAO'][mask].values[0]
 
     text = texts_html.get('tab1', {}).get(radio_map, {}).get(region, '')
+
     if text == current_text:
         return dash.no_update
     else:
@@ -349,6 +356,15 @@ def update_tab1_map(n, hover_data, fig_map):
 
 
 # ****************************** Tab 2 ******************************
+@ app.callback(
+    Output('tab2-text', 'children'),
+    Input('tab-content', 'children'),
+    State('tabs', 'active_tab'),
+)
+def update_tab2_text(tab_content, active_tab):
+    if active_tab == 'tab2':
+        text = texts_html['tab2']
+        return html.Div(text)
 
 
 @ app.callback(
@@ -423,13 +439,10 @@ def draw_tab2_cumsum(i, fig_cumsum):
         patch['data'][1 + j]['marker']['color'] = cumsum['colors'][region]
 
         # Text
-
         # Show only regions that have a filled area
         if percent_voters[region] > 0:
             x_text = x_[round(iN / 2)]
-            # x_text = max(x_text, 1000)
             y_text = fig_cumsum['data'][0]['y'][round(i / 2)] / 2
-            # y_text = max(25e6, y_text)
         else:
             x_text = -1000
             y_text = -1000
@@ -443,11 +456,7 @@ def draw_tab2_cumsum(i, fig_cumsum):
             [0, 0.2],
             [8, cumsum['text']['textfont']['size']]
         )
-        patch['data'][6 + j]['text'] = "".join([
-            # f"{df['QT_APTOS_CUMSUM_PERCENT'][i-1] : 0.3f}% of voters live in<br>",
-            # f"{i / len(df) * 100 : 0.3f}% of counties",
-            f"{percent_voters[region]*100 :.2f}%"
-        ])
+        patch['data'][6 + j]['text'] = "".join([f"{percent_voters[region]*100 :.2f}%"])
 
     return patch
 
@@ -497,4 +506,9 @@ def draw_tab2_map(i, map):
 
 
 if __name__ == "__main__":
-    app.run(host=inputs["host"], port=inputs["port"], debug=inputs["debug"], dev_tools_silence_routes_logging=True)
+    app.run(
+        host=inputs["host"],
+        port=inputs["port"],
+        debug=inputs["debug"],
+        dev_tools_silence_routes_logging=True
+    )

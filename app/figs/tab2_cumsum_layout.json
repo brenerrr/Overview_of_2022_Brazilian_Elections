@@ -15,6 +15,7 @@
         "showgrid": true
     },
     "xaxis": {
+        "fixedrange": false,
         "title": {
             "text": "Number of counties"
         },
