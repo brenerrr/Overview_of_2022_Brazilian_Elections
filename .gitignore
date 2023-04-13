@@ -1,10 +1,10 @@
-mapbox_token.txt
+app/mapbox_token.txt
 
-files/*csv
+app/files/*csv
 
-files/BR*
+app/files/BR*
 
-files/2018
+app/files/2018
 
 .vscode
 
@@ -12,6 +12,6 @@ __pycache__
 
 *ipynb
 
-!files/state2region.csv
+!app/files/state2region.csv
 
-!files/df_zz*
+!app/files/df_zz*
