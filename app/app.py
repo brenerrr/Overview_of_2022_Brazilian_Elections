@@ -1,35 +1,33 @@
 # %% Import modules
 import src.preprocessing as pp
 import importlib
-from collections import defaultdict
 import dash_bootstrap_components as dbc
-import sys
 from dash import html, dcc, Input, Output, Patch, State, ctx
 import dash
-from plotly import graph_objects as go
 import numpy as np
 import plotly.io as pio
 from src.preprocessing import *
+import flask
 
 
 # Load data
 pio.templates.default = "simple_white"
 
-print("Starting")
+inputs = load_json("inputs.json")
+print("Starting dashboard with the following inputs")
+print(inputs)
 
 df, df_regions, df_zz, df_2018, df_zz_2018 = load_results()
 
-rgba_red = 'rgba(178,24,43,1)'
-rgba_blue = 'rgba(33,102,172,1)'
-rgba_white = 'rgba(255,255,255,1)'
-colors = dict(BOLSONARO=rgba_blue, LULA=rgba_red)
+colors = dict(BOLSONARO=inputs["blue"], LULA=inputs["red"])
 texts_html = load_json('text/text_snippets.json')
-
 template_layout = load_json('figs/template.json')
 
+
 try:
-    with open('mapbox_token.txt', 'r') as f:
+    with open('./mapbox_token.txt', 'r') as f:
         token = f.read()
+        print('Found mapbox token.')
 except:
     token = None
 
@@ -79,7 +77,8 @@ tabs_content = [
                         className='map-radio',
                         id='map-radio'
                     )
-                )
+                ),
+
             ]),
 
 
@@ -103,13 +102,14 @@ tabs_content = [
                 )
             ]),
 
+
         ]),
 
         html.Div(id=("tab1-text"), className='tab1-text'),
 
         dcc.Interval(
             id='tab1-interval-component',
-            interval=1 * 1000,  # in milliseconds
+            interval=inputs["tab1_update_interval"] * 1000,  # in milliseconds
             n_intervals=0
         )
     ]),
@@ -130,10 +130,11 @@ tabs_content = [
 
         dcc.Interval(
             id='tab2-interval-component',
-            interval=2 * 1000,  # in milliseconds
+            interval=inputs["tab2_update_interval"] * 1000,  # in milliseconds
             n_intervals=0
-        )
+        ),
 
+        dcc.Store(id='cumsum-previous-hover', storage_type='session')
 
 
     ]),
@@ -143,13 +144,14 @@ tabs_name = ['tab-0', 'tab-1']
 tabs = dict(zip(tabs_name, tabs_content))
 
 
-# app = JupyterDash(__name/__)
+server = flask.Flask(__name__)  # define flask app.server
+
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    server=server  # type: ignore
 )
-
 
 app.layout = html.Div(className='main', children=[
 
@@ -175,7 +177,8 @@ app.layout = html.Div(className='main', children=[
     Input('tabs', 'active_tab'),
 )
 def update_tab(active_tab):
-    return tabs[active_tab]
+    if active_tab is not None: return tabs[active_tab]
+    else: return dash.no_update
 
 # ****************************** Tab 1 ******************************
 
@@ -211,7 +214,7 @@ def update_tab1_text(fig_map, current_text, radio_map):
         return html.Div(text)
 
 
-@app.callback(
+@ app.callback(
     Output('bar', 'figure'),
     Input('bar-radio', 'value'),
     Input('map-radio', 'value'),
@@ -222,7 +225,7 @@ def toggle_tab1_bar(radio_bar, radio_map):
     return fig
 
 
-@app.callback(
+@ app.callback(
     Output('bar', 'figure', allow_duplicate=True),
     Input('tab1-map', 'figure'),
     State('bar', 'figure'),
@@ -233,11 +236,10 @@ def toggle_tab1_bar(radio_bar, radio_map):
 def update_tab1_bar(fig_map, fig_bar, radio_bar, radio_map):
 
     mask = np.array(fig_map['data'][1]['z'])
-    # Candidates in x axis
+
     if radio_bar == 'Aggregated':
         patch = make_bar_aggregated(mask, radio_bar, fig_bar, radio_map)
 
-    # Regions in x axis
     else:
         patch = make_bar_expanded(mask, fig_bar, radio_map)
 
@@ -262,7 +264,9 @@ def make_bar_expanded(mask, fig_bar, value_map):
         new_data = [df_regions['DELTA'] * mask]
         indexes = [0]
 
-    if np.array_equiv(new_data, current_values): return dash.no_update
+    if np.array_equiv(new_data, current_values):
+        return dash.no_update
+
     for i, val in zip(indexes, new_data):
         patch['data'][i]['y'] = val
     patch['layout'] = bars[value_map]['Expanded'].layout
@@ -283,7 +287,9 @@ def make_bar_aggregated(mask, value, fig_bar, value_map):
         if new_values == current_values: return dash.no_update
     else:
         new_values = (df_regions['PERCENTAGE_TOTAL_BOLSONARO_2018'] * mask).tolist() + (df_regions['PERCENTAGE_TOTAL_BOLSONARO'] * mask).tolist()
-        if np.array_equiv(new_values, current_values): return dash.no_update
+
+        if np.array_equiv(new_values, current_values):
+            return dash.no_update
 
     patch['layout'] = bars[value_map]['Aggregated']['layout']
 
@@ -293,40 +299,30 @@ def make_bar_aggregated(mask, value, fig_bar, value_map):
     return patch
 
 
-@app.callback(
+@ app.callback(
     Output('tab1-map', 'figure', allow_duplicate=True),
     Input('map-radio', 'value'),
     prevent_initial_call=True
 )
 def toggle_tab1_map(option):
-    # if option == '2022 Results':
-    # z = df['PERCENTAGE_BOLSONARO'].values
-    # else:
-    # z = df['DELTA'].values
-
     return tab1_map[option]['fig']
-
-    layout = tab1_map[option]['layout']
-    patch = Patch()
-    patch['data'][0]['z'] = z
-    patch['layout'] = layout
-
-    return patch
 
 
 @ app.callback(
     Output('tab1-map', 'figure'),
     Input('tab1-interval-component', 'n_intervals'),
     State('tab1-map', 'hoverData'),
-    State('tab1-map', 'figure'),
+    State('tab1-map', 'figure')
 )
-def update_tab1_map(n, hoverData, fig_map):
+def update_tab1_map(n, hover_data, fig_map):
 
     patch_map = Patch()
 
-    if hoverData:
+    if hover_data:
+
         # Find region of click
-        i = hoverData['points'][0]['pointNumber']
+        i = hover_data['points'][0]['pointNumber']
+
         region = fig_map['data'][0]['customdata'][i][-1]
         mask = df_regions.NM_REGIAO == region
         new_z = mask.astype(float).values
@@ -338,11 +334,16 @@ def update_tab1_map(n, hoverData, fig_map):
         if not same_region_previous:
             regions_z = mask.astype(float).values
             patch_map['data'][1]['z'] = regions_z
+        else:
+
+            return dash.no_update
 
     else:
         if not all(fig_map['data'][1]['z']):
             regions_z = np.ones_like(fig_map['data'][1]['z'])
             patch_map['data'][1]['z'] = regions_z
+        else:
+            return dash.no_update
 
     return patch_map
 
@@ -352,18 +353,26 @@ def update_tab1_map(n, hoverData, fig_map):
 
 @ app.callback(
     Output('tab2-cumsum', 'figure'),
-    Input('tab2-cumsum', 'hoverData'),
+    Output('cumsum-previous-hover', 'value'),
+    Input('tab2-interval-component', 'n_intervals'),
+    State('tab2-cumsum', 'hoverData'),
+    State('cumsum-previous-hover', 'value'),
     State('tab2-cumsum', 'figure'),
 )
-def update_tab2_cumsum(hoverData, fig_cumsum):
+def update_tab2_cumsum(n, hover_data, previous_hover_data, fig_cumsum):
     # First call
-    if not ctx.triggered_id: return draw_tab2_cumsum(1000, fig_cumsum)
+    if not ctx.triggered_id:
+        return (
+            draw_tab2_cumsum(inputs['tab2_preload_n'], fig_cumsum),
+            dash.no_update
+        )
 
-    if not hoverData: return dash.no_update
+    elif (not hover_data) or (hover_data == previous_hover_data):
+        return dash.no_update, dash.no_update
 
     else:
-        i = hoverData['points'][0]['pointNumber'] + 1
-        return draw_tab2_cumsum(i, fig_cumsum)
+        i = hover_data['points'][0]['pointNumber'] + 1
+        return draw_tab2_cumsum(i, fig_cumsum), hover_data
 
 
 def draw_tab2_cumsum(i, fig_cumsum):
@@ -376,10 +385,7 @@ def draw_tab2_cumsum(i, fig_cumsum):
         percent_voters[region] = df_['QT_APTOS'][df_['NM_REGIAO'] == region].sum() / all_voters
 
     # Fill
-    # df_ = df.iloc[:i + 1]
     x_fill = df_.index.values + 1
-    # x_fill = np.concatenate((x_fill[0:1], x_fill[1::20], x_fill[-1:], ))
-    # Add points for the rest of the curve
     last = df.shape[0]
     step = 10
     n_points = int((last - x_fill[-1]) / step)
@@ -389,9 +395,7 @@ def draw_tab2_cumsum(i, fig_cumsum):
         x_fill[1::20],
         np.linspace(x_fill[-1], last, n_points)),
     )
-
     y_fill = fig_cumsum['data'][0]['y'][:i]
-    # y_fill = np.concatenate((y_fill[0:1], y_fill[1::20], y_fill[-1:], ))
 
     y_fill = np.concatenate((
         y_fill[0:1],
@@ -452,19 +456,20 @@ def draw_tab2_cumsum(i, fig_cumsum):
     Output('tab2-map', 'figure'),
     Input('tab2-interval-component', 'n_intervals'),
     State('tab2-cumsum', 'hoverData'),
+    State('cumsum-previous-hover', 'value'),
     State('tab2-map', 'figure')
 )
-def update_tab2_map(n, hoverData, map):
+def update_tab2_map(n, hover_data, previous_hover_data, map):
 
     # First call
-    if not ctx.triggered_id: return draw_tab2_map(213, map)
+    if not ctx.triggered_id: return draw_tab2_map(inputs['tab2_preload_n'], map)
 
-    # A call by interval component but there is no hover data
-    if not hoverData: return dash.no_update
+    # Only update if hover changed
+    elif (not hover_data) or (hover_data == previous_hover_data):
+        return dash.no_update
 
-    # A call by interval component with hover data
     else:
-        i = hoverData['points'][0]['pointNumber'] + 1
+        i = hover_data['points'][0]['pointNumber'] + 1
         return draw_tab2_map(i, map)
 
 
@@ -492,5 +497,4 @@ def draw_tab2_map(i, map):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
-# %%
+    app.run(host=inputs["host"], port=inputs["port"], debug=inputs["debug"], dev_tools_silence_routes_logging=True)

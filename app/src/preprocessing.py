@@ -101,7 +101,7 @@ def load_results(
 
 def load_json(filename: str, additional_dict=None) -> dict:
     if additional_dict is None: additional_dict = dict()
-    with open(filename, 'r') as file:
+    with open('' + filename, 'r') as file:
         data = json.load(file)
     additional_dict = deep_update(additional_dict, data)
     return additional_dict
