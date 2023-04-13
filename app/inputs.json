@@ -1,11 +1,11 @@
 {
     "tab1_update_interval": 3,
     "tab2_update_interval": 3,
-    "port": 8050,
+    "port": 80,
     "host": "0.0.0.0",
     "red": "rgba(178,24,43,1)",
     "blue": "rgba(33,102,172,1)",
-    "debug": true,
+    "debug": false,
     "tab2_preload_n": 213,
     "logging_level": "info"
 }

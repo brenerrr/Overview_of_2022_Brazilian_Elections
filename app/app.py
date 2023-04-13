@@ -156,7 +156,7 @@ app = dash.Dash(
 
 app.layout = html.Div(className='main', children=[
 
-    html.H1('Overview of Brazilian Elections'),
+    html.H1('Overview of 2022 Brazilian Elections'),
 
     html.Br(),
 
@@ -184,6 +184,7 @@ app.layout = html.Div(className='main', children=[
     html.Br(),
 
     html.Div(id='tab-content'),
+
 
 ])
 
@@ -506,6 +507,7 @@ def draw_tab2_map(i, map):
 
 
 if __name__ == "__main__":
+
     app.run(
         host=inputs["host"],
         port=inputs["port"],

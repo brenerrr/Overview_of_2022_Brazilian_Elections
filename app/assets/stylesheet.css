@@ -11,21 +11,28 @@
 body {
     font-family: 'Noto Sans';
     color: #F0A500;
+    background-color: #1b1513;
+
+
 }
 
 .main {
-    /* border: 3px solid #F0A500; */
-    /* border-radius: 15px; */
-    height: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 4vh;
+    border: 3px solid #F0A500;
+    width: 1201px;
+    border-radius: 15px;
+    height: 850px;
     width: 1200px;
     background-color: #1b1513;
 
 }
 
 h1 {
-    visibility: hidden;
     margin-bottom: 0px;
     margin-left: 10px;
+    padding-top: 10px;
     text-align: center;
 }
 
@@ -49,9 +56,9 @@ input[type="radio"] {
     text-align: justify;
 
     width: 80%;
-
-    margin: 20px 0 0 0;
-    border: 3px solid #F0A500;
+    color: #ffffff;
+    margin: 50px 0 0 0;
+    /* border: 3px solid #E45826; */
     border-radius: 15px;
 
     padding: 8px;

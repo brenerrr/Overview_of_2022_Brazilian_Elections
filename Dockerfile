@@ -11,6 +11,6 @@ RUN pip install -r /tmp/requirements.txt
 
 # CMD [ "app.py" ]
 
-EXPOSE 8050
+EXPOSE 80
 
 CMD ["python", "app.py"]
