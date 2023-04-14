@@ -14,4 +14,6 @@ __pycache__
 
 !app/files/state2region.csv
 
+!app/files/modelourna_numerointerno.csv
+
 !app/files/df_zz*

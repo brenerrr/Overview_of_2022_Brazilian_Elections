@@ -9,8 +9,8 @@ import geopandas as gpd
 import numpy as np
 
 # %% Download data
-shutil.rmtree('../files', ignore_errors=True)
-os.mkdir('../files')
+shutil.rmtree('./files', ignore_errors=True)
+os.mkdir('./files')
 
 states = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB',
@@ -22,7 +22,7 @@ for state in states:
     print(f'\n Downloading data from {state}')
     print(BU_URL)
     req = requests.get(BU_URL)
-    file_path = os.path.join('../files', f'{state}.zip')
+    file_path = os.path.join('./files', f'{state}.zip')
     with open(file_path, 'wb') as output_file:
         output_file.write(req.content)
 
@@ -30,14 +30,14 @@ for state in states:
     with zipfile.ZipFile(file_path, mode="r") as archive:
         files = [filename for filename in archive.namelist() if filename.endswith('.csv')]
         for file in files:
-            archive.extract(file, '../files')
+            archive.extract(file, './files')
 
     os.remove(file_path)
 
 # Ballot models
 URL = 'https://cdn.tse.jus.br/estatistica/sead/odsele/modelo_urna/modelourna_numerointerno.zip'
 req = requests.get(URL)
-file_path = os.path.join('../files', 'model_number.zip')
+file_path = os.path.join('./files', 'model_number.zip')
 with open(file_path, 'wb') as output_file:
     output_file.write(req.content)
 
@@ -45,7 +45,7 @@ with open(file_path, 'wb') as output_file:
 with zipfile.ZipFile(file_path, mode="r") as archive:
     files = [filename for filename in archive.namelist() if filename.endswith('.csv')]
     for file in files:
-        archive.extract(file, '../files')
+        archive.extract(file, './files')
 
 os.remove(file_path)
 
@@ -58,18 +58,18 @@ print('Downloading maps')
 for URL in URLS:
     req = requests.get(URL)
     filename = URL.split('/')[-1]
-    file_path = os.path.join('../files', filename)
+    file_path = os.path.join('./files', filename)
     with open(file_path, 'wb') as output_file:
         output_file.write(req.content)
 
     # Extract csv file
     with zipfile.ZipFile(file_path, mode="r") as archive:
-        archive.extractall('../files')
+        archive.extractall('./files')
 
     os.remove(file_path)
 
 # 2018 election
-directory_2018 = os.path.join('../files', '2018')
+directory_2018 = os.path.join('./files', '2018')
 shutil.rmtree(directory_2018, ignore_errors=True)
 os.mkdir(directory_2018)
 
@@ -96,12 +96,13 @@ for state in states:
 
 
 # %% Simplify geo data
+print('\nSimplifying geometries data')
 
-gdf_states = gpd.read_file('../files/BR_UF_2021.shp')
+gdf_states = gpd.read_file('./files/BR_UF_2021.shp')
 gdf_states = gdf_states.rename({'SIGLA': 'SG_UF'}, axis=1)
 
 # Save state to region mapping
-gdf_states[['SG_UF', 'NM_REGIAO']].to_csv('../files/state2region.csv', index=False)
+gdf_states[['SG_UF', 'NM_REGIAO']].to_csv('./files/state2region.csv', index=False)
 
 # Create region boundaries
 gdf_regions = gdf_states[['NM_REGIAO', 'geometry']].dissolve(by='NM_REGIAO')
@@ -109,12 +110,12 @@ gdf_regions["geometry"] = (
     gdf_regions.to_crs(gdf_regions.estimate_utm_crs()).simplify(2000).to_crs(gdf_regions.crs)
 )
 
-with open('../files/regions_geo.json', 'w') as file:
+with open('./files/regions_geo.json', 'w') as file:
     file.write(gdf_regions.reset_index().to_json(indent=2))
 
 
 # Simplify counties geometry
-gdf_counties = gpd.read_file('../files/BR_Municipios_2021.shp')
+gdf_counties = gpd.read_file('./files/BR_Municipios_2021.shp')
 gdf_counties["geometry"] = (
     gdf_counties.to_crs(gdf_counties.estimate_utm_crs()).simplify(2000).to_crs(gdf_counties.crs)
 )
@@ -147,16 +148,18 @@ gdf_counties.NM_MUNICIPIO = gdf_counties.NM_MUNICIPIO.str.replace(r"^WESTFÁLIA$
 gdf_counties.NM_MUNICIPIO = gdf_counties.NM_MUNICIPIO.str.replace(r"^ANHANGUERA$", "ANHANGÜERA", regex=True)
 gdf_counties = gdf_counties.loc[~(gdf_counties.NM_MUNICIPIO == 'LAGOA MIRIM')]
 
-with open('../files/counties_geo.json', 'w') as file:
+with open('./files/counties_geo.json', 'w') as file:
     file.write(gdf_counties.to_json(indent=2))
 
 gdf_counties = gdf_counties.set_index(keys=['SG_UF', 'NM_MUNICIPIO']).sort_values(by=['SG_UF', 'NM_MUNICIPIO'])
 # %% Load election data
-files = [file for file in os.listdir('../files') if file.startswith('bweb')]
+print('\nProcessing election data')
+
+files = [file for file in os.listdir('./files') if file.startswith('bweb')]
 df = []
 for file in files:
     df_state = pd.read_csv(
-        os.path.join('../files', file),
+        os.path.join('./files', file),
         encoding='Latin_1',
         delimiter=';',
         usecols=['DS_ELEICAO', 'SG_UF', 'NM_MUNICIPIO', 'NR_ZONA', 'NR_SECAO', 'QT_APTOS', 'QT_COMPARECIMENTO', 'QT_ABSTENCOES', 'NM_VOTAVEL', 'QT_VOTOS', 'NR_URNA_EFETIVADA'],
@@ -170,7 +173,7 @@ df.head()
 
 # %% Load ballots data
 
-df_model_nr = pd.read_csv(os.path.join('../files', 'modelourna_numerointerno.csv'), encoding='Latin_1', delimiter=';', index_col='DS_MODELO_URNA')
+df_model_nr = pd.read_csv(os.path.join('./files', 'modelourna_numerointerno.csv'), encoding='Latin_1', delimiter=';', index_col='DS_MODELO_URNA')
 nr_ballots = df[['SG_UF', 'NM_MUNICIPIO', 'NR_URNA_EFETIVADA']]
 ballot_models_list = []
 
@@ -213,14 +216,14 @@ df = df.merge(gdf_states[['SG_UF', 'NM_REGIAO']], how='left', on='SG_UF')
 df = df.sort_values(by=['SG_UF', 'NM_REGIAO'])
 
 # %% Export dataframe
-df.to_file('../files/df.json', driver='GeoJSON', index=False)
+df.to_file('./files/df.json', driver='GeoJSON', index=False)
 
 # %% Export dataframe of international data
 
-df_zz[['NM_MUNICIPIO', 'VOTOS_BOLSONARO', 'VOTOS_LULA']].to_csv('../files/df_zz.csv', index=False)
+df_zz[['NM_MUNICIPIO', 'VOTOS_BOLSONARO', 'VOTOS_LULA']].to_csv('./files/df_zz.csv', index=False)
 # %% Perform the same steps for 2018 data
 
-directory_2018 = os.path.join('../files', '2018')
+directory_2018 = os.path.join('./files', '2018')
 files = [file for file in os.listdir(directory_2018) if file.startswith('bweb')]
 df_2018 = []
 for file in files:
@@ -278,7 +281,7 @@ df_ballot_models_2018 = df_ballot_models_2018.join(nr_ballots[['SG_UF', 'NM_MUNI
 df_final_2018 = df_condensed_2018.join(df_votes_2018).join(df_ballot_models_2018)
 
 # Export zz data
-df_final_2018.loc['ZZ', ['VOTOS_BOLSONARO', 'VOTOS_HADDAD']].to_csv('../files/df_zz_2018.csv')
+df_final_2018.loc['ZZ', ['VOTOS_BOLSONARO', 'VOTOS_HADDAD']].to_csv('./files/df_zz_2018.csv')
 # %%
 df_final_2018 = gdf_counties[['geometry', 'AREA_KM2']].join(df_final_2018, how='right')
 df_final_2018 = df_final_2018.reset_index()
@@ -286,6 +289,14 @@ df_zz_2018 = df_final_2018[df_final_2018.SG_UF == 'ZZ']
 df_final_2018 = df_final_2018[~(df_final_2018.SG_UF == 'ZZ')]
 df_final_2018 = df_final_2018.merge(gdf_states[['SG_UF', 'NM_REGIAO']], how='left', on='SG_UF')
 df_final_2018 = df_final_2018.sort_values(by=['SG_UF', 'NM_REGIAO'])
-df_final_2018.to_file('../files/df_2018.json', driver='GeoJSON', index=False)
+df_final_2018.to_file('./files/df_2018.json', driver='GeoJSON', index=False)
+
+# %% Delete unecessary files
+
+for file in os.listdir('./files/'):
+    if file.startswith('bweb') or file.startswith('BR_'):
+        os.remove(f'./files/{file}')
+
+shutil.rmtree('./files/2018')
 
 print('FINISHED')
