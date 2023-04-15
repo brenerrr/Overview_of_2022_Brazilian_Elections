@@ -29,7 +29,7 @@ With the default inputs the app will be deployed on http://localhost.
 
 ## Running the app with Docker
 
-You can also create and run a Docker image in order to run the app with the following commands (be sure to be in the root folder of the repository and not on the `app` folder).
+You can also create and run a Docker image with the following commands (be sure to be in the root folder of the repository and not on the `app` folder).
 
 ```
 docker build -t dashboard .
@@ -38,27 +38,27 @@ docker run -p 80:80 dashboard
 
 With the default inputs the app will be deployed on http://localhost. If you change the default port on `app/inputs.json` make sure to change the command above as well as the Dockerfile.
 
-## Inputs.json
+## Inputs
 Some parameters of the dashboard can be controlled with inputs stored on `app/inputs.json`
 
 
-| Input                | Description                                    | Default Value        |
-| -------------------- | ---------------------------------------------- | -------------------- |
-| tab1_update_interval | How frequent data in the first tab is updated  | 2                    |
-| tab2_update_interval | How frequent data in the second tab is updated | 3                    |
-| port                 | Port used to reach the Flask server            | 80                   |
-| host                 | The hostname to listen on                      | "0.0.0.0"            |
-| red                  | RGBA values for red color                      | "rgba(178,24,43,1)"  |
-| blue                 | RGBA values for red color                      | "rgba(33,102,172,1)" |
-| debug                | Run in debug mode                              | false                |
-| tab2_preload_n       | Index used to when loading data on second tab  | 213                  |
-| logging_level        | Log level                                      | "info"               |
+| Input                | Description                                               | Default Value        |
+| -------------------- | --------------------------------------------------------- | -------------------- |
+| tab1_update_interval | How frequent data in the first tab is updated in seconds  | 2                    |
+| tab2_update_interval | How frequent data in the second tab is updated in seconds | 3                    |
+| port                 | Port used to reach the Flask server                       | 80                   |
+| host                 | The hostname to listen on                                 | "0.0.0.0"            |
+| red                  | RGBA values for red color                                 | "rgba(178,24,43,1)"  |
+| blue                 | RGBA values for red color                                 | "rgba(33,102,172,1)" |
+| debug                | Run in debug mode                                         | false                |
+| tab2_preload_n       | Index used to when loading data on second tab             | 213                  |
+| logging_level        | Log level                                                 | "info"               |
 
 ## Mapbox token
 
 In order to load the dashboard with a proper black background, you must have a mapbox token. For this, you need to create a free account at https://www.mapbox.com/. After that, you will have access to a default public token.
 
-Create a simple text file `app/mapbox_token.txt` and paste the token code on it. When the app loads, it will use that token to apply the proper syle on the map, resulting in a black background.
+Create a simple text file `app/mapbox_token.txt` and paste the token code on it. When the app is executed, it will use that token to apply the proper syle on the map, resulting in a black background.
 
 ## Election Data
 
