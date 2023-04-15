@@ -17,3 +17,5 @@ __pycache__
 !app/files/modelourna_numerointerno.csv
 
 !app/files/df_zz*
+
+*.pem

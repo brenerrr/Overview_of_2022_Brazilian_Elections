@@ -102,7 +102,7 @@ gdf_states = gpd.read_file('./files/BR_UF_2021.shp')
 gdf_states = gdf_states.rename({'SIGLA': 'SG_UF'}, axis=1)
 
 # Save state to region mapping
-gdf_states[['SG_UF', 'NM_REGIAO']].to_csv('./files/state2region.csv', index=False)
+gdf_states[['SG_UF', 'NM_REGIAO']].to_csv('./files/state2region.csv', index=False, encoding='utf-8')
 
 # Create region boundaries
 gdf_regions = gdf_states[['NM_REGIAO', 'geometry']].dissolve(by='NM_REGIAO')
@@ -217,6 +217,7 @@ df = df.sort_values(by=['SG_UF', 'NM_REGIAO'])
 
 # %% Export dataframe
 df.to_file('./files/df.json', driver='GeoJSON', index=False)
+df.loc[:, df.columns != 'geometry'].to_csv('./files/df.csv', index=False)
 
 # %% Export dataframe of international data
 
@@ -290,6 +291,7 @@ df_final_2018 = df_final_2018[~(df_final_2018.SG_UF == 'ZZ')]
 df_final_2018 = df_final_2018.merge(gdf_states[['SG_UF', 'NM_REGIAO']], how='left', on='SG_UF')
 df_final_2018 = df_final_2018.sort_values(by=['SG_UF', 'NM_REGIAO'])
 df_final_2018.to_file('./files/df_2018.json', driver='GeoJSON', index=False)
+df_final_2018.loc[:, df_final_2018.columns != 'geometry'].to_csv('./files/df_2018.csv', index=False, encoding='utf-8')
 
 # %% Delete unecessary files
 
