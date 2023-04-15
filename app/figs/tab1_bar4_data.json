@@ -6,5 +6,5 @@
         }
     },
     "hoverinfo": "skip",
-    "hovertemplate": "%{y:.2f}% of %{x} Bolsonaro voters live in the %{text}.<br>He obtained %{customdata[0]:.2f}% of all valid votes.<extra>%{x}</extra>"
+    "hovertemplate": "The %{text} gave %{y:.2f}% of all valid votes in %{x} to Bolsonaro.<br>He obtained in total %{customdata[0]:.2f}% of all valid votes.<extra>%{x}</extra>"
 }
